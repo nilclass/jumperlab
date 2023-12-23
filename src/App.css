@@ -1,38 +1,62 @@
-.App {
-  text-align: center;
+
+
+.segment {
+  border: solid 1px black;
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.segment.horizontal {
+  width: calc(2.54mm * 5);
+  height: 2.54mm;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.segment.vertical {
+  width: 2.54mm;
+  height: calc(2.54mm * 5);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.PowerRow {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  gap: 2.54mm;
+  justify-content: space-around;
+}
+
+.MainBlock {
+  display: flex;
+}
+
+.MainBlock + .MainBlock {
+  margin-top: calc(2 * 2.54mm);
+}
+
+.Board {
+  width: calc(2.54mm * 30);
+
+  margin: 20% auto 0 auto;
+}
+
+/* -------------------- */
+
+.AdjustRect > .corner {
+  position: absolute;
+  background: black;
+  border-radius: 8px;
+  width: 16px;
+  height: 16px;
+  border: solid 1px transparent;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.AdjustRect > .corner:hover {
+  border: solid 1px red;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.the-rect {
+  background: blue;
+  color: #ddf;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: 0 0;
 }
