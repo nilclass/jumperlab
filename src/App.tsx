@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
-import math from 'mathjs'
 import './App.css';
 
 const defaultRect: Rect = [
