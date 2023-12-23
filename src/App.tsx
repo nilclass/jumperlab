@@ -1,24 +1,67 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import math from 'mathjs'
 import './App.css';
 
+const defaultRect: Rect = [
+  [50, 50],
+  [150, 50],
+  [50, 150],
+  [150, 150],
+]
+
+function restoreRect(): Rect | null {
+  let loaded
+  try {
+    loaded = JSON.parse(localStorage.rect)
+  } catch(e) {
+    return null
+  }
+  return loaded as Rect
+}
+
 function App() {
-  const [rect, setRect] = useState<Array<[number, number]>>([
-    [50, 50],
-    [150, 50],
-    [50, 150],
-    [150, 150],
-  ])
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [rect, setRect] = useState<Rect>(restoreRect() || defaultRect)
+  const [adjust, setAdjust] = useState(false)
+  const [selected, setSelected] = useState<string | null>(null)
 
   const handleRectChange = (rect: Rect) => {
     setRect(rect)
   }
 
+  useEffect(() => {
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(
+      stream => {
+        const v = videoRef.current!
+        const track = stream.getVideoTracks()[0]
+        const settings = track.getSettings()
+        const ratio = settings.width! / settings.height!
+        v.srcObject = stream
+        const sRatio = v.offsetWidth / v.offsetHeight
+        console.log('ratio', ratio, 'sRatio', sRatio)
+      },
+      (e) => console.log('no cam', e)
+    )
+  }, [])
+
+  useEffect(() => {
+    localStorage.rect = JSON.stringify(rect)
+  }, [rect])
+
+  const handleSegmentClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    setSelected(e.currentTarget.dataset.id!)
+  }, [])
+
   return (
-    <div className="App">
-      <div className='the-rect' style={rectStyle(rect)}>hello</div>
-      <AdjustRect rect={rect} onRectChange={handleRectChange} />
-      {/* <Board /> */}
+    <div className="App" data-adjust={adjust}>
+      <div className='toolbar'>
+        <button onClick={() => setAdjust(adjust => !adjust)}>{adjust ? 'Done adjusting' : 'Adjust'}</button>
+      </div>
+      <video ref={videoRef} autoPlay />
+      <div className='the-rect' style={rectStyle(rect)}>
+        <Board onSegmentClick={handleSegmentClick} selected={selected} />
+      </div>
+      {adjust && <AdjustRect rect={rect} onRectChange={handleRectChange} />}
     </div>
   );
 }
@@ -97,9 +140,9 @@ function transform2d(w: number, h: number, x1: number, y1: number, x2: number, y
 function rectStyle(rect: Rect): React.CSSProperties {
   const [p0, p1, p2, p3] = rect
   return {
-    width: 100,
-    height: 100,
-    transform: transform2d(100, 100, ...p0, ...p1, ...p2, ...p3)
+    width: 331,
+    height: 189,
+    transform: transform2d(331, 189, ...p0, ...p1, ...p2, ...p3)
   }
 }
 
@@ -108,7 +151,7 @@ export default App;
 type Rect = Array<[number, number]>
 
 const AdjustRect: React.FC<{ rect: Rect, onRectChange: (r: Rect) => void }> = ({ rect, onRectChange }) => {
-  const [dragging, setDragging] = useState<number | null>(null)
+  const [dragging, setDragging] = useState<number | 'all' | null>(null)
   const [lastPointer, setLastPointer] = useState<[number, number] | null>(null)
 
   useEffect(() => {
@@ -118,15 +161,22 @@ const AdjustRect: React.FC<{ rect: Rect, onRectChange: (r: Rect) => void }> = ({
     const handleMouseMove = (e: MouseEvent) => {
       const pt: [number, number] = [e.clientX, e.clientY]
       if (lastPointer) {
-        const target = rect[dragging]
-        onRectChange([
-          ...rect.slice(0, dragging),
-          [
-            target[0] + pt[0] - lastPointer[0],
-            target[1] + pt[1] - lastPointer[1],
-          ],
-          ...rect.slice(dragging+1),
-        ])
+        if (typeof dragging === 'number') {
+          const target = rect[dragging]
+          onRectChange([
+            ...rect.slice(0, dragging),
+            [
+              target[0] + pt[0] - lastPointer[0],
+              target[1] + pt[1] - lastPointer[1],
+            ],
+            ...rect.slice(dragging+1),
+          ])
+        } else {
+          onRectChange(rect.map(p => [
+              p[0] + pt[0] - lastPointer[0],
+              p[1] + pt[1] - lastPointer[1],
+          ]))
+        }
       }
       setLastPointer(pt)
     }
@@ -165,42 +215,90 @@ const AdjustRect: React.FC<{ rect: Rect, onRectChange: (r: Rect) => void }> = ({
           }}
         />
       ))}
+      <div className='move-handle'
+        style={moveHandleStyle(rect)}
+        onMouseDown={(e) => {
+          if (e.button === 0) {
+            setDragging('all')
+          }
+        }}
+      />
     </div>
   )
 }
 
-const Board: React.FC = () => {
+function moveHandleStyle(rect: Rect): React.CSSProperties {
+  const x = rect.reduce((s, p) => s + p[0], 0) / 4
+  const y = rect.reduce((s, p) => s + p[1], 0) / 4
+  return {
+    left: x - 8,
+    top: y - 8,
+  }
+}
+
+type BoardContextType = {
+  onSegmentClick: (e: React.MouseEvent<HTMLDivElement>) => void
+  selected: string | null
+}
+
+const BoardContext = React.createContext<BoardContextType | null>(null)
+
+const Board: React.FC<{ onSegmentClick: (e: React.MouseEvent<HTMLDivElement>) => void, selected: string | null }> = ({ onSegmentClick, selected }) => {
   return (
-    <div className='Board'>
-      <PowerRow />
-      <PowerRow />
-      <MainBlock first={1} last={30} />
-      <MainBlock first={31} last={60} />
-      <PowerRow />
-      <PowerRow />
-    </div>
+    <BoardContext.Provider value={{ onSegmentClick, selected }}>
+      <div className='Board'>
+        <PowerRow net='5V' labelPos='top' />
+        <PowerRow net='GND' labelPos='bottom' />
+        <MainBlock first={1} last={30} labelPos='top' />
+        <MainBlock first={31} last={60} labelPos='bottom' />
+        <PowerRow net='5V' labelPos='top' />
+        <PowerRow net='GND' labelPos='bottom' />
+      </div>
+    </BoardContext.Provider>
   )
 }
 
-const PowerRow: React.FC = () => {
+const PowerRow: React.FC<{ net: string, labelPos: string }> = React.memo(({ net, labelPos }) => {
+  const segments = []
+  for (let i = 0; i < 5; i++) {
+    segments.push(<Segment id={net} key={i} horizontal label={net} labelPos={labelPos} />)
+    }
   return (
-    <div className='PowerRow'>
-      <div className='segment horizontal' />
-      <div className='segment horizontal' />
-      <div className='segment horizontal' />
-      <div className='segment horizontal' />
-      <div className='segment horizontal' />
+    <div className='PowerRow'>{segments}</div>
+  )
+})
+
+type SegmentProps = {
+  label?: string
+  labelPos?: string
+  id: string
+} & (
+  { horizontal: true, vertical?: never } |
+  { horizontal?: never, vertical: true }
+)
+
+const Segment: React.FC<SegmentProps> = React.memo(({ id, horizontal, label, labelPos = 'top' }) => {
+  const { onSegmentClick, selected } = useContext(BoardContext)!;
+  const pins = []
+  for (let i = 0; i < 5; i++) {
+    pins.push(<div className='pin' key={i} />)
+  }
+  return (
+    <div className={`Segment ${horizontal ? 'horizontal' : 'vertical'} label-pos-${labelPos} ${selected === id ? 'selected' : ''}`}
+      data-id={id} onClick={onSegmentClick}>
+      {label && <div className='label'>{label}</div>}
+      {pins}
     </div>
   )
-}
+})
 
-const MainBlock: React.FC<{ first: number, last: number }> = ({ first, last }) => {
+const MainBlock: React.FC<{ first: number, last: number, labelPos: string }> = ({ first, last, labelPos }) => {
   if (first > last) {
     throw new Error('BUG!')
   }
   const columns = []
   for (let i = first; i <= last; i++) {
-    columns.push(<div key={i} className='segment vertical' />)
+    columns.push(<Segment key={i} vertical label={String(i)} labelPos={labelPos} id={String(i)} />)
   }
   return (
     <div className='MainBlock'>

@@ -5,41 +5,111 @@
   box-sizing: border-box;
 }
 
-.segment.horizontal {
-  width: calc(2.54mm * 5);
-  height: 2.54mm;
-}
-
-.segment.vertical {
-  width: 2.54mm;
-  height: calc(2.54mm * 5);
-}
-
 .PowerRow {
   display: flex;
-  gap: 2.54mm;
-  justify-content: space-around;
+  gap: 10px;
+  justify-content: center;
 }
 
 .MainBlock {
   display: flex;
+  justify-content: center;
 }
 
 .MainBlock + .MainBlock {
-  margin-top: calc(2 * 2.54mm);
+  margin-top: 20px;
+}
+
+.MainBlock + .PowerRow {
+  margin-top: 14px;
+}
+
+.PowerRow + .MainBlock {
+  margin-top: 14px;
 }
 
 .Board {
-  width: calc(2.54mm * 30);
+  width: 331px;
+  height: 189px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
-  margin: 20% auto 0 auto;
+.Segment {
+  display: flex;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.Segment.selected {
+  outline: solid 1px red;
+}
+
+.Segment > .label {
+  position: absolute;
+  background: black;
+  color: white;
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: bold;
+  display: none;
+}
+
+.Segment.label-pos-top > .label {
+  top: -12px;
+}
+
+.Segment.label-pos-bottom > .label {
+  bottom: -12px;
+}
+
+.Segment:hover > .label {
+  display: block;
+}
+
+.Segment.horizontal {
+  flex-direction: row;
+}
+
+.Segment.vertical {
+  flex-direction: column;
+}
+
+.pin {
+  width: 8px;
+  height: 8px;
+  margin: 1px;
+  border-style: groove;
+  border-width: 3px;
+  border-color: black;
+  box-sizing: border-box;
+}
+
+.pin:hover {
+  border-color: #fc7;
+}
+
+
+/* -------------------- */
+
+video {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
 }
 
 /* -------------------- */
 
+.overlay {
+  border: solid 1px red;
+  position: absolute;
+}
+
 .AdjustRect > .corner {
   position: absolute;
-  background: black;
+  background: #fcf;
   border-radius: 8px;
   width: 16px;
   height: 16px;
@@ -51,12 +121,37 @@
   border: solid 1px red;
 }
 
+.AdjustRect > .move-handle {
+  position: absolute;
+  background: black;
+  border-radius: 8px;
+  width: 16px;
+  height: 16px;
+  border: solid 1px transparent;
+  color: white;
+  cursor: move;
+}
+
 .the-rect {
-  background: blue;
   color: #ddf;
+  opacity: 0.5;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
   transform-origin: 0 0;
+}
+
+.App[data-adjust="true"] .the-rect {
+  background: blue;
+}
+
+.toolbar {
+  position: absolute;
+  top: 0;
+  width: 100vw;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  padding: 15px;
 }
