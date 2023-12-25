@@ -1,5 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback, useContext } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useContext, useLayoutEffect } from 'react';
 import './App.css';
+import { Board } from './Board'
+import { JlCtl, Bridge, makeBridge } from './jlctlapi'
+
+type ConnectionContextType = {
+  port: SerialPort | null
+  setPort: (port: SerialPort | null) => void
+}
+
+const ConnectionContext = React.createContext<ConnectionContextType | null>(null)
 
 const defaultRect: Rect = [
   [50, 50],
@@ -23,6 +32,20 @@ function App() {
   const [rect, setRect] = useState<Rect>(restoreRect() || defaultRect)
   const [adjust, setAdjust] = useState(false)
   const [selected, setSelected] = useState<string | null>(null)
+  const [dialog, setDialog] = useState<React.ReactNode>(null)
+  const [connectedPort, setConnectedPort] = useState<SerialPort | null>(null)
+  const jlctl = useRef<JlCtl | null>(null)
+  const [bridges, setBridges] = useState<Array<Bridge>>([])
+
+  function loadBridges() {
+    jlctl.current!.getBridges().then(setBridges)
+  }
+
+  useEffect(() => {
+    jlctl.current = new JlCtl('http://localhost:8080')
+
+    loadBridges()
+  }, [])
 
   const handleRectChange = (rect: Rect) => {
     setRect(rect)
@@ -44,25 +67,162 @@ function App() {
   }, [])
 
   useEffect(() => {
+    if (connectedPort) {
+      console.log('port', connectedPort)
+      const reader = connectedPort.readable!.getReader()
+      reader.read().then(result => console.log('read', result))
+    }
+  }, [connectedPort])
+
+  useEffect(() => {
     localStorage.rect = JSON.stringify(rect)
   }, [rect])
 
   const handleSegmentClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    setSelected(e.currentTarget.dataset.id!)
+    const id = e.currentTarget.dataset.id!
+    setSelected(selected => {
+      if (selected) {
+        const bridge = makeBridge(selected, id)
+        jlctl.current!.addBridges([bridge]).then(() => console.log('bridge added'))
+      }
+      return id
+    })
+  }, [])
+
+  const handleSelectSerial = () => {
+    navigator.serial.requestPort().then(
+      port => { console.log('got port', port) },
+      e => { console.log('no port', e) },
+    )
+  }
+
+  function openDialog(dialogComponent: React.FC<any>) {
+    const Component = dialogComponent as React.FC<{ onClose: () => void }>
+    setDialog(<Component onClose={() => { setDialog(null) }} />)
+  }
+
+  return (
+    <ConnectionContext.Provider value={{ port: connectedPort, setPort: setConnectedPort }}>
+      <div className="App" data-adjust={adjust}>
+        <div className='toolbar'>
+          <button onClick={() => setAdjust(adjust => !adjust)}>{adjust ? 'Done adjusting' : 'Adjust'}</button>
+          <button onClick={() => openDialog(JumperlessConnectionDialog)}>Jumperless Connection</button>
+        </div>
+        <video ref={videoRef} autoPlay />
+        <div className='the-rect' style={rectStyle(rect)}>
+          <Board onSegmentClick={handleSegmentClick} selected={selected} />
+        </div>
+        {adjust && <AdjustRect rect={rect} onRectChange={handleRectChange} />}
+        {dialog}
+      </div>
+    </ConnectionContext.Provider>
+  );
+}
+
+const JumperlessConnectionDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const [ports, setPorts] = useState<Array<SerialPort> | null>(null)
+  const { port: connectedPort, setPort: setConnectedPort } = useContext(ConnectionContext)!
+
+  async function reloadPorts() {
+    const ports = await navigator.serial.getPorts()
+    ports.forEach(port => {
+      port.addEventListener('connect', () => {console.log('conn!')})
+      port.addEventListener('open', () => {console.log('op!')})
+      port.onconnect = () => {
+        console.log('conn')
+      }
+      port.ondisconnect = () => {
+        console.log('dis')
+      }
+    })
+    setPorts(ports)
+  }
+
+  useEffect(() => {
+    reloadPorts()
+  }, [])
+
+  async function handleAddPort() {
+    try {
+      await navigator.serial.requestPort()
+    } catch(e) {
+      console.error(e)
+    }
+    reloadPorts()
+  }
+
+  async function handleForget(index: number) {
+    const port = ports![index]
+    await port.forget()
+    reloadPorts()
+  }
+
+  async function handleConnect(index: number) {
+    const port = ports![index]
+    await port.open({
+      baudRate: 57600,
+    })
+    setConnectedPort(port)
+  }
+
+  async function handleDisconnect() {
+    await connectedPort!.close()
+    setConnectedPort(null)
+  }
+
+  return (
+    <ModalDialog onClose={onClose} className='JumperlessConnectionDialog'>
+      <button onClick={onClose}>Close dialog</button>
+      {connectedPort && (
+        <>
+          <h3>Connection</h3>
+          <div>
+            <strong>Port: </strong>{formatPort(connectedPort)}
+          </div>
+          <button onClick={handleDisconnect}>Disconnect</button>
+        </>
+      )}
+      <h3>Ports</h3>
+      {ports === null
+      ? <em>Loading...</em>
+      : ports.length === 0
+      ? <em>No known ports. Add one to begin.</em>
+      : (
+        <ul>
+          {ports.map((port, i) => (
+            <li key={i}>
+              <strong>{formatPort(port)}</strong>
+              <button onClick={() => handleForget(i)}>Forget</button>
+              <button onClick={() => handleConnect(i)}>Connect</button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <button onClick={handleAddPort}>Add Port</button>
+    </ModalDialog>
+  )
+}
+
+function formatPort(port: SerialPort) {
+  const info = port.getInfo()
+  if (info.usbVendorId && info.usbProductId) {
+    return `${info.usbVendorId.toString(16).padStart(4, '0')}:${info.usbProductId.toString(16).padStart(4, '0')}`
+  }
+  return '(unknown device)'
+}
+
+const ModalDialog: React.FC<{ className?: string, onClose: () => void, children: React.ReactNode }> = ({ children, className, onClose }) => {
+  const ref = useRef<HTMLDialogElement>(null)
+
+  useLayoutEffect(() => {
+    ref.current!.showModal()
   }, [])
 
   return (
-    <div className="App" data-adjust={adjust}>
-      <div className='toolbar'>
-        <button onClick={() => setAdjust(adjust => !adjust)}>{adjust ? 'Done adjusting' : 'Adjust'}</button>
-      </div>
-      <video ref={videoRef} autoPlay />
-      <div className='the-rect' style={rectStyle(rect)}>
-        <Board onSegmentClick={handleSegmentClick} selected={selected} />
-      </div>
-      {adjust && <AdjustRect rect={rect} onRectChange={handleRectChange} />}
-    </div>
-  );
+    <dialog className={`ModalDialog ${className || ''}`} ref={ref} onClose={onClose}>
+      {children}
+    </dialog>
+  )
 }
 
 type M9 = [number, number, number,
@@ -233,75 +393,4 @@ function moveHandleStyle(rect: Rect): React.CSSProperties {
     left: x - 8,
     top: y - 8,
   }
-}
-
-type BoardContextType = {
-  onSegmentClick: (e: React.MouseEvent<HTMLDivElement>) => void
-  selected: string | null
-}
-
-const BoardContext = React.createContext<BoardContextType | null>(null)
-
-const Board: React.FC<{ onSegmentClick: (e: React.MouseEvent<HTMLDivElement>) => void, selected: string | null }> = ({ onSegmentClick, selected }) => {
-  return (
-    <BoardContext.Provider value={{ onSegmentClick, selected }}>
-      <div className='Board'>
-        <PowerRow net='5V' labelPos='top' />
-        <PowerRow net='GND' labelPos='bottom' />
-        <MainBlock first={1} last={30} labelPos='top' />
-        <MainBlock first={31} last={60} labelPos='bottom' />
-        <PowerRow net='5V' labelPos='top' />
-        <PowerRow net='GND' labelPos='bottom' />
-      </div>
-    </BoardContext.Provider>
-  )
-}
-
-const PowerRow: React.FC<{ net: string, labelPos: string }> = React.memo(({ net, labelPos }) => {
-  const segments = []
-  for (let i = 0; i < 5; i++) {
-    segments.push(<Segment id={net} key={i} horizontal label={net} labelPos={labelPos} />)
-    }
-  return (
-    <div className='PowerRow'>{segments}</div>
-  )
-})
-
-type SegmentProps = {
-  label?: string
-  labelPos?: string
-  id: string
-} & (
-  { horizontal: true, vertical?: never } |
-  { horizontal?: never, vertical: true }
-)
-
-const Segment: React.FC<SegmentProps> = React.memo(({ id, horizontal, label, labelPos = 'top' }) => {
-  const { onSegmentClick, selected } = useContext(BoardContext)!;
-  const pins = []
-  for (let i = 0; i < 5; i++) {
-    pins.push(<div className='pin' key={i} />)
-  }
-  return (
-    <div className={`Segment ${horizontal ? 'horizontal' : 'vertical'} label-pos-${labelPos} ${selected === id ? 'selected' : ''}`}
-      data-id={id} onClick={onSegmentClick}>
-      {label && <div className='label'>{label}</div>}
-      {pins}
-    </div>
-  )
-})
-
-const MainBlock: React.FC<{ first: number, last: number, labelPos: string }> = ({ first, last, labelPos }) => {
-  if (first > last) {
-    throw new Error('BUG!')
-  }
-  const columns = []
-  for (let i = first; i <= last; i++) {
-    columns.push(<Segment key={i} vertical label={String(i)} labelPos={labelPos} id={String(i)} />)
-  }
-  return (
-    <div className='MainBlock'>
-      {columns}
-    </div>
-  )
 }
