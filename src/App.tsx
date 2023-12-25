@@ -1,14 +1,7 @@
-import React, { useState, useEffect, useRef, useCallback, useContext, useLayoutEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import './App.css';
 import { Board } from './Board'
-import { JlCtl, Bridge, makeBridge } from './jlctlapi'
-
-type ConnectionContextType = {
-  port: SerialPort | null
-  setPort: (port: SerialPort | null) => void
-}
-
-const ConnectionContext = React.createContext<ConnectionContextType | null>(null)
+import { ConnectionWidget, ConnectionWrapper } from './connection';
 
 const defaultRect: Rect = [
   [50, 50],
@@ -28,24 +21,13 @@ function restoreRect(): Rect | null {
 }
 
 function App() {
+
+
   const videoRef = useRef<HTMLVideoElement>(null)
   const [rect, setRect] = useState<Rect>(restoreRect() || defaultRect)
   const [adjust, setAdjust] = useState(false)
   const [selected, setSelected] = useState<string | null>(null)
   const [dialog, setDialog] = useState<React.ReactNode>(null)
-  const [connectedPort, setConnectedPort] = useState<SerialPort | null>(null)
-  const jlctl = useRef<JlCtl | null>(null)
-  const [bridges, setBridges] = useState<Array<Bridge>>([])
-
-  function loadBridges() {
-    jlctl.current!.getBridges().then(setBridges)
-  }
-
-  useEffect(() => {
-    jlctl.current = new JlCtl('http://localhost:8080')
-
-    loadBridges()
-  }, [])
 
   const handleRectChange = (rect: Rect) => {
     setRect(rect)
@@ -67,14 +49,6 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (connectedPort) {
-      console.log('port', connectedPort)
-      const reader = connectedPort.readable!.getReader()
-      reader.read().then(result => console.log('read', result))
-    }
-  }, [connectedPort])
-
-  useEffect(() => {
     localStorage.rect = JSON.stringify(rect)
   }, [rect])
 
@@ -82,19 +56,12 @@ function App() {
     const id = e.currentTarget.dataset.id!
     setSelected(selected => {
       if (selected) {
-        const bridge = makeBridge(selected, id)
-        jlctl.current!.addBridges([bridge]).then(() => console.log('bridge added'))
+        /* const bridge = makeBridge(selected, id)
+* jlctl.current!.addBridges([bridge]).then(() => console.log('bridge added')) */
       }
       return id
     })
   }, [])
-
-  const handleSelectSerial = () => {
-    navigator.serial.requestPort().then(
-      port => { console.log('got port', port) },
-      e => { console.log('no port', e) },
-    )
-  }
 
   function openDialog(dialogComponent: React.FC<any>) {
     const Component = dialogComponent as React.FC<{ onClose: () => void }>
@@ -102,11 +69,11 @@ function App() {
   }
 
   return (
-    <ConnectionContext.Provider value={{ port: connectedPort, setPort: setConnectedPort }}>
+    <ConnectionWrapper baseUrl='http://localhost:8080'>
+      <ConnectionWidget pollIntervalMs={2000} />
       <div className="App" data-adjust={adjust}>
         <div className='toolbar'>
           <button onClick={() => setAdjust(adjust => !adjust)}>{adjust ? 'Done adjusting' : 'Adjust'}</button>
-          <button onClick={() => openDialog(JumperlessConnectionDialog)}>Jumperless Connection</button>
         </div>
         <video ref={videoRef} autoPlay />
         <div className='the-rect' style={rectStyle(rect)}>
@@ -115,100 +82,8 @@ function App() {
         {adjust && <AdjustRect rect={rect} onRectChange={handleRectChange} />}
         {dialog}
       </div>
-    </ConnectionContext.Provider>
+    </ConnectionWrapper>
   );
-}
-
-const JumperlessConnectionDialog: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const [ports, setPorts] = useState<Array<SerialPort> | null>(null)
-  const { port: connectedPort, setPort: setConnectedPort } = useContext(ConnectionContext)!
-
-  async function reloadPorts() {
-    const ports = await navigator.serial.getPorts()
-    ports.forEach(port => {
-      port.addEventListener('connect', () => {console.log('conn!')})
-      port.addEventListener('open', () => {console.log('op!')})
-      port.onconnect = () => {
-        console.log('conn')
-      }
-      port.ondisconnect = () => {
-        console.log('dis')
-      }
-    })
-    setPorts(ports)
-  }
-
-  useEffect(() => {
-    reloadPorts()
-  }, [])
-
-  async function handleAddPort() {
-    try {
-      await navigator.serial.requestPort()
-    } catch(e) {
-      console.error(e)
-    }
-    reloadPorts()
-  }
-
-  async function handleForget(index: number) {
-    const port = ports![index]
-    await port.forget()
-    reloadPorts()
-  }
-
-  async function handleConnect(index: number) {
-    const port = ports![index]
-    await port.open({
-      baudRate: 57600,
-    })
-    setConnectedPort(port)
-  }
-
-  async function handleDisconnect() {
-    await connectedPort!.close()
-    setConnectedPort(null)
-  }
-
-  return (
-    <ModalDialog onClose={onClose} className='JumperlessConnectionDialog'>
-      <button onClick={onClose}>Close dialog</button>
-      {connectedPort && (
-        <>
-          <h3>Connection</h3>
-          <div>
-            <strong>Port: </strong>{formatPort(connectedPort)}
-          </div>
-          <button onClick={handleDisconnect}>Disconnect</button>
-        </>
-      )}
-      <h3>Ports</h3>
-      {ports === null
-      ? <em>Loading...</em>
-      : ports.length === 0
-      ? <em>No known ports. Add one to begin.</em>
-      : (
-        <ul>
-          {ports.map((port, i) => (
-            <li key={i}>
-              <strong>{formatPort(port)}</strong>
-              <button onClick={() => handleForget(i)}>Forget</button>
-              <button onClick={() => handleConnect(i)}>Connect</button>
-            </li>
-          ))}
-        </ul>
-      )}
-      <button onClick={handleAddPort}>Add Port</button>
-    </ModalDialog>
-  )
-}
-
-function formatPort(port: SerialPort) {
-  const info = port.getInfo()
-  if (info.usbVendorId && info.usbProductId) {
-    return `${info.usbVendorId.toString(16).padStart(4, '0')}:${info.usbProductId.toString(16).padStart(4, '0')}`
-  }
-  return '(unknown device)'
 }
 
 const ModalDialog: React.FC<{ className?: string, onClose: () => void, children: React.ReactNode }> = ({ children, className, onClose }) => {
@@ -241,10 +116,10 @@ function adj(m: M9): M9 { // Compute the adjugate of m
 
 function multmm(a: M9, b: M9): M9 { // multiply two matrices
   var c = Array(9) as M9;
-  for (var i = 0; i != 3; ++i) {
-    for (var j = 0; j != 3; ++j) {
+  for (var i = 0; i !== 3; ++i) {
+    for (var j = 0; j !== 3; ++j) {
       var cij = 0;
-      for (var k = 0; k != 3; ++k) {
+      for (var k = 0; k !== 3; ++k) {
         cij += a[3*i + k]*b[3*k + j];
       }
       c[3*i + j] = cij;

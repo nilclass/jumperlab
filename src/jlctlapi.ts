@@ -8,6 +8,7 @@ export type NetlistEntry = {
   nodes: string
   bridges: string
 }
+export type Netlist = Array<NetlistEntry>
 
 export function makeBridge(a: string, b: string): Bridge {
   return [makeNode(a), makeNode(b)]
@@ -21,6 +22,8 @@ export function makeNode(id: string): JumperlessNode {
   }
 }
 
+export class NotConnected extends Error {}
+
 export class JlCtl {
   baseUrl: string
 
@@ -30,11 +33,13 @@ export class JlCtl {
 
   async getNetlist(): Promise<Array<NetlistEntry>> {
     const response = await fetch(`${this.baseUrl}/netlist`)
+    handle502(response)
     return await response.json() as Array<NetlistEntry>
   }
 
   async getBridges(): Promise<Array<Bridge>> {
     const response = await fetch(`${this.baseUrl}/bridges`)
+    handle502(response)
     return await response.json() as Array<Bridge>
   }
 
@@ -46,6 +51,7 @@ export class JlCtl {
       },
       body: JSON.stringify(bridges),
     })
+    handle502(response)
     return await response.json() as Array<Bridge>
   }
 
@@ -57,10 +63,18 @@ export class JlCtl {
       },
       body: JSON.stringify(bridges),
     })
+    handle502(response)
     return await response.json() as Array<Bridge>
   }
 
   async clearBridges(): Promise<void> {
-    await fetch(`${this.baseUrl}/bridges/clear`, { method: 'POST' })
+    const response = await fetch(`${this.baseUrl}/bridges/clear`, { method: 'POST' })
+    handle502(response)
+  }
+}
+
+function handle502(response: Response) {
+  if (response.status === 502) {
+    throw new NotConnected()
   }
 }
