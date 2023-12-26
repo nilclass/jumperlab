@@ -22,6 +22,12 @@ export function makeNode(id: string): JumperlessNode {
   }
 }
 
+function handle502(response: Response) {
+  if (response.status === 502) {
+    throw new NotConnected()
+  }
+}
+
 export class NotConnected extends Error {}
 
 export class JlCtl {
@@ -70,11 +76,5 @@ export class JlCtl {
   async clearBridges(): Promise<void> {
     const response = await fetch(`${this.baseUrl}/bridges/clear`, { method: 'POST' })
     handle502(response)
-  }
-}
-
-function handle502(response: Response) {
-  if (response.status === 502) {
-    throw new NotConnected()
   }
 }

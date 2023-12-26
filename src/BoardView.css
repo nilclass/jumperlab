@@ -1,0 +1,26 @@
+.BoardView {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.BoardView > .viewarea {
+  background: blue;
+  position: relative;
+}
+
+.BoardView > .viewarea > video {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.BoardView > .viewarea > .boardrect {
+  position: absolute;
+  opacity: 0.5;
+  transform-origin: 0 0;
+}
+
+.BoardView > .viewarea > .boardrect.adjust {
+  background: blue;
+}

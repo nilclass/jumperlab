@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
 import { JlCtl, Bridge, Netlist } from './jlctlapi'
+import './connection.css'
 
 export type ConnectionContextType = {
   // interface to the jlctl server

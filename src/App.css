@@ -1,4 +1,10 @@
 
+.BoardView {
+  width: 100vw;
+  height: 100vh;
+  
+}
+
 
 .segment {
   border: solid 1px black;
