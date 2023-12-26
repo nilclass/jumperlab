@@ -18,6 +18,7 @@ TODO
 - [nodejs](https://nodejs.org/): needed to run the dev server and build process for the UI
 - [jlctl](https://github.com/nilclass/jlctl): used as a backend for the UI to communicate with the jumperless
 
+*Steps:*
 1. Run `npm install` to install node dependencies
 2. Run `npm start` to start the development server
 
