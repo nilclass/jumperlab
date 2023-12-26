@@ -1,32 +1,48 @@
 import React, { useState, useRef, useEffect, useMemo, useLayoutEffect } from 'react'
-import { isEqual } from 'lodash'
 import { AdjustRect, Rect, defaultRect, rectStyle } from './AdjustRect'
 import { Board } from './Board'
 import './BoardView.css'
 import { useSetting } from './Settings'
 
+/**
+ * BoardView shows a `Board`, on top of a background (e.g. camera feed).
+ *
+ * The position on the board can be adjusted with built-in controls.
+ *
+ * On top of the board, a connection layer will be shown.
+ */
 export const BoardView: React.FC = () => {
   const ref = useRef<HTMLDivElement>(null)
+  // size of the view area (detected, changes on window resize)
   const [viewSize, setViewSize] = useState([100, 100])
-  const [bgSize, setBgSize] = useState([100, 100])
-  const [areaSize, setAreaSize] = useState([100, 100])
-  const [adjust, setAdjust] = useState(false)
-  const [boardRect, setBoardRect] = useSetting('boardRect', defaultRect)
-  const viewRect = useMemo<Rect>(() => boardRect.map(([x, y]) => [areaSize[0] * x / bgSize[0], areaSize[1] * y / bgSize[1]]), [boardRect, areaSize, bgSize])
-  const boardRectStyle = useMemo(() => ({
-    ...rectStyle(viewRect),
-  }), [viewRect])
-  const toggleAdjust = () => setAdjust(!adjust)
 
-  useEffect(() => {
+  // size of the background (e.g. camera feed) in source coordinates (e.g. physical camera pixels)
+  const [bgSize, setBgSize] = useState([100, 100])
+
+  // size of the background in view coordinates. Depending on the ratios of the view and background,
+  // either the width or the height of this will equal the one from viewSize. The respective other
+  // coordinate is always smaller than the one from viewSize.
+  const areaSize = useMemo(() => {
     const viewRatio = viewSize[0] / viewSize[1]
     const bgRatio = bgSize[0] / bgSize[1]
     if (bgRatio > viewRatio) {
-      setAreaSize([viewSize[0], viewSize[0] / bgRatio])
+      return [viewSize[0], viewSize[0] / bgRatio]
     } else {
-      setAreaSize([viewSize[1] * bgRatio, viewSize[1]])
+      return [viewSize[1] * bgRatio, viewSize[1]]
     }
   }, [viewSize, bgSize])
+
+  // True, while adjusting the board rect
+  const [adjust, setAdjust] = useState(false)
+
+  // Four corners of the board in source coordinates
+  const [boardRect, setBoardRect] = useSetting('boardRect', defaultRect)
+
+  // Four corners of the board in view coordinates (relative to `.viewarea`)
+  const viewRect = useMemo<Rect>(() => boardRect.map(([x, y]) => [areaSize[0] * x / bgSize[0], areaSize[1] * y / bgSize[1]]), [boardRect, areaSize, bgSize])
+
+  // Applies 3D transform placing the board at the right position on the camera feed
+  const boardRectStyle = useMemo(() => rectStyle(viewRect), [viewRect])
 
   function updateSize() {
     if (!ref.current) {
@@ -35,18 +51,18 @@ export const BoardView: React.FC = () => {
     const width = ref.current.offsetWidth
     const height = ref.current.offsetHeight
     if (width !== viewSize[0] || height !== viewSize[1]) {
-      /* console.log('view size now ', width, height) */
       setViewSize([width, height])
     }
   }
 
+  // Check if view size is still correct after rendering
   useLayoutEffect(updateSize)
 
+  // Update view size whenever window is resized
   useEffect(() => {
     function handleResize() {
       updateSize()
     }
-
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
@@ -54,18 +70,8 @@ export const BoardView: React.FC = () => {
   const handleBoardRectChange = (rect: Rect) => {
     // translate view coordinates to background (camera) coordinates
     const bgRect: Rect = rect.map(([x, y]) => [bgSize[0] * x / areaSize[0], bgSize[1] * y / areaSize[1]])
-    /* console.log('diff board', ...boardRect.map(([x1, y1], i) => {
-*   const [x2, y2] = bgRect[i]
-*   return [x2 - x1, y2 - y1]
-* }))
-* console.log('diff view', ...viewRect.map(([x1, y1], i) => {
-*   const [x2, y2] = rect[i]
-*   return [x2 - x1, y2 - y1]
-* })) */
     setBoardRect(bgRect)
   }
-
-  /* console.log(`TOP RIGHT:\n  BOARD RECT: ${boardRect[0].join(', ')}\n  VIEW RECT:  ${viewRect[0].join(', ')}`) */
 
   return (
     <div className='BoardView' ref={ref} data-adjust={adjust}>
@@ -73,11 +79,11 @@ export const BoardView: React.FC = () => {
         <CameraLayer onSizeChange={setBgSize} />
         {/* <BoardLayer />
             <ConnectionLayer /> */}
-        <div className='boardrect adjust' style={boardRectStyle}>
+        <div className='boardrect' style={boardRectStyle}>
           <Board onSegmentClick={() => {}} selected={null} />
         </div>
         {adjust && <AdjustRect rect={viewRect} onRectChange={handleBoardRectChange} />}
-        <button className='adjust' onClick={toggleAdjust}>
+        <button className='adjust-button' onClick={() => setAdjust(!adjust)}>
           {adjust ? 'Done' : 'Change board position'}
         </button>
       </div>

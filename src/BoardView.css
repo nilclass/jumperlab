@@ -21,12 +21,12 @@
   transform-origin: 0 0;
 }
 
-.BoardView > .viewarea > .boardrect.adjust {
+.BoardView[data-adjust="true"] > .viewarea > .boardrect {
   background: blue;
 }
 
-.BoardView > .viewarea > .adjust {
+.BoardView > .viewarea > .adjust-button {
   position: absolute;
   top: 0;
-  left: 0;
+  right: 0;
 }
