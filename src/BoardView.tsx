@@ -3,19 +3,20 @@ import { isEqual } from 'lodash'
 import { AdjustRect, Rect, defaultRect, rectStyle } from './AdjustRect'
 import { Board } from './Board'
 import './BoardView.css'
+import { useSetting } from './Settings'
 
 export const BoardView: React.FC = () => {
   const ref = useRef<HTMLDivElement>(null)
   const [viewSize, setViewSize] = useState([100, 100])
   const [bgSize, setBgSize] = useState([100, 100])
   const [areaSize, setAreaSize] = useState([100, 100])
-  /* const [style, setStyle] = useState<React.CSSProperties>({}) */
   const [adjust, setAdjust] = useState(false)
-  const [boardRect, setBoardRect] = useState(defaultRect)
+  const [boardRect, setBoardRect] = useSetting('boardRect', defaultRect)
   const viewRect = useMemo<Rect>(() => boardRect.map(([x, y]) => [areaSize[0] * x / bgSize[0], areaSize[1] * y / bgSize[1]]), [boardRect, areaSize, bgSize])
   const boardRectStyle = useMemo(() => ({
     ...rectStyle(viewRect),
   }), [viewRect])
+  const toggleAdjust = () => setAdjust(!adjust)
 
   useEffect(() => {
     const viewRatio = viewSize[0] / viewSize[1]
@@ -34,7 +35,7 @@ export const BoardView: React.FC = () => {
     const width = ref.current.offsetWidth
     const height = ref.current.offsetHeight
     if (width !== viewSize[0] || height !== viewSize[1]) {
-      console.log('view size now ', width, height)
+      /* console.log('view size now ', width, height) */
       setViewSize([width, height])
     }
   }
@@ -67,7 +68,7 @@ export const BoardView: React.FC = () => {
   /* console.log(`TOP RIGHT:\n  BOARD RECT: ${boardRect[0].join(', ')}\n  VIEW RECT:  ${viewRect[0].join(', ')}`) */
 
   return (
-    <div className='BoardView' ref={ref}>
+    <div className='BoardView' ref={ref} data-adjust={adjust}>
       <div className='viewarea' style={{ width: areaSize[0], height: areaSize[1] }}>
         <CameraLayer onSizeChange={setBgSize} />
         {/* <BoardLayer />
@@ -75,7 +76,10 @@ export const BoardView: React.FC = () => {
         <div className='boardrect adjust' style={boardRectStyle}>
           <Board onSegmentClick={() => {}} selected={null} />
         </div>
-        <AdjustRect rect={viewRect} onRectChange={handleBoardRectChange} />
+        {adjust && <AdjustRect rect={viewRect} onRectChange={handleBoardRectChange} />}
+        <button className='adjust' onClick={toggleAdjust}>
+          {adjust ? 'Done' : 'Change board position'}
+        </button>
       </div>
     </div>
   )

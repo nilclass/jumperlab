@@ -22,7 +22,6 @@ export const AdjustRect: React.FC<{ rect: Rect, onRectChange: (r: Rect) => void 
       if (lastPointer) {
         if (typeof dragging === 'number') {
           const target = rect[dragging]
-          console.log('pt', pt, 'dx', pt[0] - lastPointer[0], 'dy', pt[1] - lastPointer[1], 'tx', target[0], 'ty', target[1])
           onRectChange([
             ...rect.slice(0, dragging),
             [

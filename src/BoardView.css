@@ -24,3 +24,9 @@
 .BoardView > .viewarea > .boardrect.adjust {
   background: blue;
 }
+
+.BoardView > .viewarea > .adjust {
+  position: absolute;
+  top: 0;
+  left: 0;
+}

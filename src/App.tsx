@@ -3,6 +3,7 @@ import './App.css';
 import { Board } from './Board'
 import { BoardView } from './BoardView';
 import { ConnectionWidget, ConnectionWrapper } from './connection';
+import { SettingsWrapper } from './Settings';
 
 function restoreRect(): Rect | null {
   let loaded
@@ -59,21 +60,23 @@ function App() {
   }
 
   return (
-    <ConnectionWrapper baseUrl='http://localhost:8080'>
-      {/* <ConnectionWidget pollIntervalMs={30000} /> */}
-      <BoardView />
-      {/* <div className="App" data-adjust={adjust}>
-        <div className='toolbar'>
-          <button onClick={() => setAdjust(adjust => !adjust)}>{adjust ? 'Done adjusting' : 'Adjust'}</button>
-        </div>
-        <video ref={videoRef} autoPlay />
-        <div className='the-rect' style={rectStyle(rect)}>
-          <Board onSegmentClick={handleSegmentClick} selected={selected} />
-        </div>
-        {adjust && <AdjustRect rect={rect} onRectChange={handleRectChange} />}
-        {dialog}
-      </div> */}
-    </ConnectionWrapper>
+    <SettingsWrapper>
+      <ConnectionWrapper baseUrl='http://localhost:8080'>
+        {/* <ConnectionWidget pollIntervalMs={30000} /> */}
+        <BoardView />
+        {/* <div className="App" data-adjust={adjust}>
+            <div className='toolbar'>
+            <button onClick={() => setAdjust(adjust => !adjust)}>{adjust ? 'Done adjusting' : 'Adjust'}</button>
+            </div>
+            <video ref={videoRef} autoPlay />
+            <div className='the-rect' style={rectStyle(rect)}>
+            <Board onSegmentClick={handleSegmentClick} selected={selected} />
+            </div>
+            {adjust && <AdjustRect rect={rect} onRectChange={handleRectChange} />}
+            {dialog}
+            </div> */}
+      </ConnectionWrapper>
+    </SettingsWrapper>
   );
 }
 
