@@ -2,9 +2,14 @@
 .BoardView {
   width: 100vw;
   height: 100vh;
-  
 }
 
+.Toolbar {
+  position: absolute;
+  top: 0;
+  width: 100vw;
+  box-sizing: border-box;
+}
 
 .segment {
   border: solid 1px black;
@@ -150,14 +155,4 @@ video {
 
 .App[data-adjust="true"] .the-rect {
   background: blue;
-}
-
-.toolbar {
-  position: absolute;
-  top: 0;
-  width: 100vw;
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  padding: 15px;
 }

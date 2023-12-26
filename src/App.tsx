@@ -1,14 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import './App.css';
 import { BoardView } from './BoardView';
-import { ConnectionWidget, ConnectionWrapper } from './connection';
+import { ConnectionWrapper } from './connection';
 import { SettingsWrapper } from './Settings';
+import { Toolbar } from './Toolbar';
 
 function App() {
   return (
     <SettingsWrapper>
       <ConnectionWrapper baseUrl='http://localhost:8080'>
-        <ConnectionWidget pollIntervalMs={2000} />
+        <Toolbar />
         <BoardView />
       </ConnectionWrapper>
     </SettingsWrapper>

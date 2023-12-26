@@ -1,0 +1,8 @@
+.Toolbar {
+  display: flex;
+  gap: 15px;
+  justify-content: space-between;
+  padding: 15px;
+
+  background: #333;
+}

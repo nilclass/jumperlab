@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 90.000002 48"
+   version="1.1"
+   id="svg4496"
+   sodipodi:docname="HTTP_logo.svg"
+   width="90"
+   height="48"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview4498"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="3.6311579"
+     inkscape:cx="186.855"
+     inkscape:cy="99.968111"
+     inkscape:window-width="2880"
+     inkscape:window-height="1551"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4496" />
+  <defs
+     id="defs4479">
+    <style
+       type="text/css"
+       id="style4477">.cls-1{fill:#008ec7;}.cls-2{fill:#005b9b;}.cls-3{fill:#fff;}</style>
+  </defs>
+  <title
+     id="title4481">IETF-Badge-HTTP</title>
+  <g
+     id="Layer_2"
+     transform="scale(0.24)">
+    <path
+       class="cls-1"
+       d="M 326,0 H 47.73 L 0,100 47.73,200 H 326 L 373.73,100 Z M 310.05,183.36 H 58.22 L 18.43,100 58.22,16.64 H 310.05 L 349.84,100 Z"
+       id="path4483" />
+    <polygon
+       class="cls-2"
+       points="310.05,183.37 58.22,183.37 18.43,100.01 58.22,16.64 310.05,16.64 349.84,100.01 "
+       id="polygon4485" />
+    <path
+       class="cls-3"
+       d="m 128.05,71.89 v 59.53 H 114.27 V 107 h -27 v 24.41 H 73.46 V 71.89 h 13.77 v 23.47 h 27 V 71.89 Z"
+       id="path4487" />
+    <path
+       class="cls-3"
+       d="M 154.5,83.12 H 135.45 V 71.89 h 51.87 v 11.23 h -19 v 48.3 H 154.5 Z"
+       id="path4489" />
+    <path
+       class="cls-3"
+       d="M 207.9,83.12 H 188.85 V 71.89 h 51.87 v 11.23 h -19.05 v 48.3 H 207.9 Z"
+       id="path4491" />
+    <path
+       class="cls-3"
+       d="m 287.62,74.53 a 20.45,20.45 0 0 1 9,7.48 20.67,20.67 0 0 1 3.14,11.48 20.73,20.73 0 0 1 -3.14,11.44 20.06,20.06 0 0 1 -9,7.48 33.55,33.55 0 0 1 -13.74,2.59 h -12 v 16.42 H 248.12 V 71.89 h 25.76 a 33.05,33.05 0 0 1 13.74,2.64 z m -5.06,26.57 a 9.33,9.33 0 0 0 3.23,-7.61 c 0,-3.34 -1.08,-5.91 -3.23,-7.69 -2.15,-1.78 -5.3,-2.68 -9.44,-2.68 h -11.23 v 20.66 h 11.23 q 6.21,0 9.44,-2.68 z"
+       id="path4493" />
+  </g>
+  <metadata
+     id="metadata4617">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>IETF-Badge-HTTP</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>

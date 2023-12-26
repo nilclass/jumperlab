@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
-import { JlCtl, Bridge, Netlist } from './jlctlapi'
+import { JlCtl, Bridge, Netlist, NotConnected } from './jlctlapi'
 import './connection.css'
 
 export type ConnectionContextType = {
   // interface to the jlctl server
   jlctl: JlCtl | null
+
+  // true if the jlctl server is reachable
+  reachable: boolean
 
   // true if the board is connected & ready
   ready: boolean
@@ -19,7 +22,7 @@ export type ConnectionContextType = {
 export const ConnectionContext = React.createContext<ConnectionContextType | null>(null)
 
 export const ConnectionWidget: React.FC<{ pollIntervalMs: number }> = ({ pollIntervalMs }) => {
-  const { ready, poll } = useContext(ConnectionContext)!
+  const { reachable, ready, poll } = useContext(ConnectionContext)!
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -34,8 +37,16 @@ export const ConnectionWidget: React.FC<{ pollIntervalMs: number }> = ({ pollInt
 
   return (
     <div className='ConnectionWidget'>
-      {ready ? 'Ready!' : 'Not ready'}
+      <strong>Connection status:</strong>
+      <StatusIcon ok={reachable} src='/images/http-icon.svg' title='jlctl server reachable' />
+      <StatusIcon ok={ready} src='/images/board-icon.svg' title='connected to board' />
     </div>
+  )
+}
+
+const StatusIcon: React.FC<{ ok: boolean, src: string, title: string }> = ({ ok, src, title }) => {
+  return (
+    <img className={`StatusIcon ${ok ? 'ok' : ''}`} src={src} title={`${title}: ${ok ? 'Yes' : 'No'}`} />
   )
 }
 
@@ -46,6 +57,7 @@ export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.Reac
   useEffect(() => {
     const ctx: ConnectionContextType = {
       jlctl: new JlCtl(baseUrl),
+      reachable: false,
       ready: false,
       netlist: null,
       bridges: null,
@@ -55,7 +67,10 @@ export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.Reac
           ctx.netlist = await ctx.jlctl!.getNetlist()
           ctx.bridges = await ctx.jlctl!.getBridges()
         } catch(e) {
-          console.error('Caught', e)
+          // if we received a 502 error (mapped to "NotConnected"),
+          // the server is reachable, but no board was detected.
+          ctx.reachable = (e instanceof NotConnected)
+
           ctx.ready = false
           return
         }

@@ -1,8 +1,10 @@
-import React, { useState, useRef, useEffect, useMemo, useLayoutEffect } from 'react'
+import React, { useState, useRef, useEffect, useMemo, useLayoutEffect, useCallback } from 'react'
 import { AdjustRect, Rect, defaultRect, rectStyle } from './AdjustRect'
 import { Board } from './Board'
 import './BoardView.css'
 import { useSetting } from './Settings'
+
+type Mode = 'select' | 'connect'
 
 /**
  * BoardView shows a `Board`, on top of a background (e.g. camera feed).
@@ -22,7 +24,7 @@ export const BoardView: React.FC = () => {
   // size of the background in view coordinates. Depending on the ratios of the view and background,
   // either the width or the height of this will equal the one from viewSize. The respective other
   // coordinate is always smaller than the one from viewSize.
-  const areaSize = useMemo(() => {
+  const areaSize = useMemo<[number, number]>(() => {
     const viewRatio = viewSize[0] / viewSize[1]
     const bgRatio = bgSize[0] / bgSize[1]
     if (bgRatio > viewRatio) {
@@ -43,6 +45,10 @@ export const BoardView: React.FC = () => {
 
   // Applies 3D transform placing the board at the right position on the camera feed
   const boardRectStyle = useMemo(() => rectStyle(viewRect), [viewRect])
+
+  const [selectedNode, setSelectedNode] = useState<string | null>(null)
+
+  const [mode, setMode] = useState<Mode>('select')
 
   function updateSize() {
     if (!ref.current) {
@@ -73,14 +79,32 @@ export const BoardView: React.FC = () => {
     setBoardRect(bgRect)
   }
 
+  const handleSegmentClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (adjust) {
+      // ignore interactions with the board while adjusting the view
+      return
+    }
+
+    const nodeId = e.currentTarget.dataset.id
+    if (!nodeId) {
+      throw new Error('BUG: click on segment with no node ID')
+    }
+
+    /* if (mode === 'connect') {
+*   console.log('connect!', selectedNode, 'to', nodeId)
+* } else if (mode === 'select') { */
+      setSelectedNode(nodeId)
+      /* setMode('connect') // TMP!
+    } */
+  }, [mode, selectedNode])
+
   return (
     <div className='BoardView' ref={ref} data-adjust={adjust}>
       <div className='viewarea' style={{ width: areaSize[0], height: areaSize[1] }}>
         <CameraLayer onSizeChange={setBgSize} />
-        {/* <BoardLayer />
-            <ConnectionLayer /> */}
         <div className='boardrect' style={boardRectStyle}>
-          <Board onSegmentClick={() => {}} selected={null} />
+          <Board onSegmentClick={handleSegmentClick} selected={selectedNode} />
+          <ConnectionLayer />
         </div>
         {adjust && <AdjustRect rect={viewRect} onRectChange={handleBoardRectChange} />}
         <button className='adjust-button' onClick={() => setAdjust(!adjust)}>
@@ -110,4 +134,51 @@ const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> 
   return (
     <video ref={ref} autoPlay />
   )
+}
+
+const ConnectionLayer: React.FC = () => {
+  const ref = useRef<HTMLCanvasElement>(null)
+  const bridges = useMemo<Array<[string, string]>>(() => [['23', '42']], [])
+
+  useLayoutEffect(() => {
+    drawConnections(ref.current!, bridges)
+  }, [bridges])
+
+  return (
+    <canvas className='ConnectionLayer' ref={ref} width={331} height={189} />
+  )
+}
+
+function drawConnections(canvas: HTMLCanvasElement, bridges: Array<[string, string]>) {
+  const c = canvas.getContext('2d')
+  if (!c) {
+    throw new Error('Failed to get 2D drawing context')
+  }
+  c.clearRect(0, 0, canvas.width, canvas.height)
+
+  for (const [aId, bId] of bridges) {
+    const a = document.querySelector<HTMLDivElement>(`.Segment[data-id="${aId}"]`)
+    const b = document.querySelector<HTMLDivElement>(`.Segment[data-id="${bId}"]`)
+
+    if (!a) {
+      throw new Error(`Segment not found: ${aId}`)
+    }
+    if (!b) {
+      throw new Error(`Segment not found: ${bId}`)
+    }
+
+    const aPt = [a.offsetLeft + a.offsetWidth / 2,
+                 a.offsetTop + a.offsetHeight / 2]
+    const bPt = [b.offsetLeft + b.offsetWidth / 2,
+                 b.offsetTop + b.offsetHeight / 2]
+
+    c.save()
+    c.strokeStyle = '#f74599'
+    c.lineWidth = 3
+
+    c.beginPath()
+    c.moveTo(aPt[0], aPt[1])
+    c.lineTo(bPt[0], bPt[1])
+    c.stroke()
+  }
 }
