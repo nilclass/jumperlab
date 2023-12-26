@@ -1,9 +1,12 @@
+# Licenses
+
+This file describes licenses for the things found in this repository.
 
 ## Specific files
 
-- public/images/http-icon.svg: Public Domain
+- The "HTTP Logo" (public/images/http-icon.svg): Public Domain
 
-## All software and files not otherwise marked
+## All software
 
 MIT License
 
