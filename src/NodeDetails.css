@@ -1,0 +1,23 @@
+.NodeDetails {
+  background: #ddd;
+  border: solid 2px #333;
+  border-style: none solid solid solid;
+  border-radius: 0 0 8px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+
+  position: absolute;
+  min-width: 250px;
+  max-width: 90%;
+  top: 0;
+  margin-top: 62px;
+  transition: .5s;
+}
+
+.NodeDetails.hidden {
+  margin-top: 0;
+  transition: .5s;
+}

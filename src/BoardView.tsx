@@ -1,10 +1,59 @@
-import React, { useState, useRef, useEffect, useMemo, useLayoutEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect, useMemo, useLayoutEffect, useCallback, useContext } from 'react'
 import { AdjustRect, Rect, defaultRect, rectStyle } from './AdjustRect'
 import { Board } from './Board'
 import './BoardView.css'
+import { ConnectionContext } from './connection'
+import { JumperlessNode } from './jlctlapi'
 import { useSetting } from './Settings'
 
-type Mode = 'select' | 'connect'
+type BoardViewProps = {
+  selectedNode: JumperlessNode | null
+  onNodeClick: (node: JumperlessNode | null) => void
+}
+
+type BoardViewMode = 'image' | 'camera' | 'blank'
+
+export const BoardViewModeSelect = () => {
+  const [mode, setMode] = useSetting('boardViewMode', 'image')
+
+  return (
+    <div className='BoardViewModeSelect'>
+      <strong>Board view mode: </strong>
+      <RadioGroup options={[
+        { value: 'image', label: '🖼️', title: 'Image' },
+        { value: 'camera', label: '📹', title: 'Camera' },
+        { value: 'blank', label: '▢', title: 'Blank' },
+      ]} name='boardViewMode' value={mode} onChange={setMode} />
+    </div>
+  )
+}
+
+type RadioGroupProps = {
+  name: string
+  value: string
+  options: Array<{
+    value: string
+    label: React.ReactNode
+    title: string
+  }>
+  onChange: (value: string) => void
+}
+
+const RadioGroup: React.FC<RadioGroupProps> = ({ name, value, options, onChange }) => {
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.currentTarget.value)
+  }, [onChange])
+  return (
+    <div className='RadioGroup'>
+      {options.map(opt => (
+        <label className='option' data-checked={opt.value === value} key={opt.value} title={opt.title}>
+          {opt.label}
+          <input type='radio' name={name} value={opt.value} checked={opt.value === value} onChange={handleChange} />
+        </label>
+      ))}
+    </div>
+  )
+}
 
 /**
  * BoardView shows a `Board`, on top of a background (e.g. camera feed).
@@ -13,7 +62,8 @@ type Mode = 'select' | 'connect'
  *
  * On top of the board, a connection layer will be shown.
  */
-export const BoardView: React.FC = () => {
+export const BoardView: React.FC<BoardViewProps> = ({ selectedNode, onNodeClick }) => {
+  const [mode, setMode] = useSetting('boardViewMode', 'image')
   const ref = useRef<HTMLDivElement>(null)
   // size of the view area (detected, changes on window resize)
   const [viewSize, setViewSize] = useState([100, 100])
@@ -46,9 +96,9 @@ export const BoardView: React.FC = () => {
   // Applies 3D transform placing the board at the right position on the camera feed
   const boardRectStyle = useMemo(() => rectStyle(viewRect), [viewRect])
 
-  const [selectedNode, setSelectedNode] = useState<string | null>(null)
+  const selectedSegment = useMemo(() => nodeToSegment(selectedNode), [selectedNode])
 
-  const [mode, setMode] = useState<Mode>('select')
+  const [pinOverlay, setPinOverlay] = useState(true)
 
   function updateSize() {
     if (!ref.current) {
@@ -85,34 +135,68 @@ export const BoardView: React.FC = () => {
       return
     }
 
-    const nodeId = e.currentTarget.dataset.id
-    if (!nodeId) {
-      throw new Error('BUG: click on segment with no node ID')
+    const segmentId = e.currentTarget.dataset.id
+    if (!segmentId) {
+      throw new Error('BUG: click on segment with no segment ID')
     }
 
-    /* if (mode === 'connect') {
-*   console.log('connect!', selectedNode, 'to', nodeId)
-* } else if (mode === 'select') { */
-      setSelectedNode(nodeId)
-      /* setMode('connect') // TMP!
-    } */
-  }, [mode, selectedNode])
+    onNodeClick(segmentToNode(segmentId))
+  }, [adjust, selectedSegment, onNodeClick])
 
   return (
-    <div className='BoardView' ref={ref} data-adjust={adjust}>
+    <div className='BoardView' ref={ref} data-adjust={adjust} data-pin-overlay={pinOverlay}>
       <div className='viewarea' style={{ width: areaSize[0], height: areaSize[1] }}>
-        <CameraLayer onSizeChange={setBgSize} />
+        {mode === 'camera'
+        ? <CameraLayer onSizeChange={setBgSize} />
+    : mode === 'image'
+    ? <ImageLayer onSizeChange={setBgSize} />
+          : <BlankLayer onSizeChange={setBgSize} />}
         <div className='boardrect' style={boardRectStyle}>
-          <Board onSegmentClick={handleSegmentClick} selected={selectedNode} />
+          <Board onSegmentClick={handleSegmentClick} selected={selectedSegment} />
           <ConnectionLayer />
         </div>
         {adjust && <AdjustRect rect={viewRect} onRectChange={handleBoardRectChange} />}
-        <button className='adjust-button' onClick={() => setAdjust(!adjust)}>
-          {adjust ? 'Done' : 'Change board position'}
-        </button>
+        <div className='buttons'>
+          <button className='adjust-button' onClick={() => setAdjust(!adjust)}>
+            {adjust ? 'Done' : 'Change board position'}
+          </button>
+          <button onClick={() => setPinOverlay(!pinOverlay)}>
+            Toggle pin overlay
+          </button>
+        </div>
       </div>
     </div>
   )
+}
+
+function segmentToNode(segment: string | null): JumperlessNode | null {
+  if (segment === null) {
+    return null
+  }
+  if (segment.match(/^\d+$/)) {
+    return parseInt(segment, 10) as JumperlessNode
+  }
+  console.warn(`Unhandled: ${segment}`)
+  return null
+}
+
+function nodeToSegment(node: JumperlessNode | null): string | null {
+  if (node === null) {
+    return null
+  }
+  return node.toString()
+}
+
+const BlankLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> = ({ onSizeChange }) => {
+  return null
+}
+
+
+const ImageLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> = ({ onSizeChange }) => {
+  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    onSizeChange([e.currentTarget.offsetWidth, e.currentTarget.offsetHeight])
+  }
+  return <img src="images/default-board-pic.jpg" onLoad={handleLoad} />
 }
 
 const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> = ({ onSizeChange }) => {
@@ -138,10 +222,24 @@ const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> 
 
 const ConnectionLayer: React.FC = () => {
   const ref = useRef<HTMLCanvasElement>(null)
-  const bridges = useMemo<Array<[string, string]>>(() => [['23', '42']], [])
+  const { bridges, netlist } = useContext(ConnectionContext)!
 
   useLayoutEffect(() => {
-    drawConnections(ref.current!, bridges)
+    const segmentBridges = bridges
+      .map(([a, b]): DrawableBridge | null => {
+        const aSegment = nodeToSegment(a)
+        const bSegment = nodeToSegment(b)
+        if (aSegment === null || bSegment === null) {
+          return null
+        }
+        //const color
+        return {
+          segments: [aSegment, bSegment],
+          color: 'blue',
+        }
+      })
+      .filter(x => x !== null) as Array<DrawableBridge>
+    drawConnections(ref.current!, segmentBridges)
   }, [bridges])
 
   return (
@@ -149,14 +247,16 @@ const ConnectionLayer: React.FC = () => {
   )
 }
 
-function drawConnections(canvas: HTMLCanvasElement, bridges: Array<[string, string]>) {
+type DrawableBridge = { segments: [string, string], color: string }
+
+function drawConnections(canvas: HTMLCanvasElement, bridges: Array<DrawableBridge>) {
   const c = canvas.getContext('2d')
   if (!c) {
     throw new Error('Failed to get 2D drawing context')
   }
   c.clearRect(0, 0, canvas.width, canvas.height)
 
-  for (const [aId, bId] of bridges) {
+  for (const { segments: [aId, bId], color } of bridges) {
     const a = document.querySelector<HTMLDivElement>(`.Segment[data-id="${aId}"]`)
     const b = document.querySelector<HTMLDivElement>(`.Segment[data-id="${bId}"]`)
 
@@ -173,7 +273,8 @@ function drawConnections(canvas: HTMLCanvasElement, bridges: Array<[string, stri
                  b.offsetTop + b.offsetHeight / 2]
 
     c.save()
-    c.strokeStyle = '#f74599'
+    //c.strokeStyle = '#f74599'
+    c.strokeStyle = color
     c.lineWidth = 3
 
     c.beginPath()

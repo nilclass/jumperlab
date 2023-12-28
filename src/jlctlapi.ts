@@ -5,7 +5,7 @@ export type NetlistEntry = {
   index: number
   name: string
   number: number
-  nodes: string
+  nodes: Array<JumperlessNode>
   bridges: string
 }
 export type Netlist = Array<NetlistEntry>

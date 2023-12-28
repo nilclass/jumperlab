@@ -1,4 +1,5 @@
 import React, { useContext } from 'react'
+import './Board.scss'
 
 type BoardContextType = {
   onSegmentClick: (e: React.MouseEvent<HTMLDivElement>) => void

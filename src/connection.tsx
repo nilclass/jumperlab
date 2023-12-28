@@ -13,7 +13,7 @@ export type ConnectionContextType = {
   ready: boolean
 
   netlist: Netlist | null
-  bridges: Array<Bridge> | null
+  bridges: Array<Bridge>
 
   // updates the context, by re-loading all info from the backend
   poll: () => Promise<void>
@@ -28,8 +28,8 @@ export const ConnectionWidget: React.FC<{ pollIntervalMs: number }> = ({ pollInt
   useEffect(() => {
     if (!busy) {
       const timer = setTimeout(() => {
-        setBusy(true)
-        poll().then(() => setBusy(false))
+        /* setBusy(true)
+* poll().then(() => setBusy(false)) */
       }, pollIntervalMs)
       return () => clearTimeout(timer)
     }
@@ -60,7 +60,7 @@ export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.Reac
       reachable: false,
       ready: false,
       netlist: null,
-      bridges: null,
+      bridges: [],
 
       async poll() {
         try {
@@ -74,6 +74,7 @@ export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.Reac
           ctx.ready = false
           return
         }
+        ctx.reachable = true
         ctx.ready = true
       }
     }

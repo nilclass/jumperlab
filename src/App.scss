@@ -1,0 +1,68 @@
+
+.BoardView {
+  width: 100vw;
+  height: calc(100vh - 62px);
+  margin-top: 62px;
+}
+
+.Toolbar {
+  position: absolute;
+  top: 0;
+  width: 100vw;
+  box-sizing: border-box;
+}
+
+/* -------------------- */
+
+video {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+/* -------------------- */
+
+.overlay {
+  border: solid 1px red;
+  position: absolute;
+}
+
+.AdjustRect > .corner {
+  position: absolute;
+  background: #fcf;
+  border-radius: 8px;
+  width: 16px;
+  height: 16px;
+  border: solid 1px transparent;
+  color: white;
+}
+
+.AdjustRect > .corner:hover {
+  border: solid 1px red;
+}
+
+.AdjustRect > .move-handle {
+  position: absolute;
+  background: black;
+  border-radius: 8px;
+  width: 16px;
+  height: 16px;
+  border: solid 1px transparent;
+  color: white;
+  cursor: move;
+}
+
+.the-rect {
+  color: #ddf;
+  opacity: 0.5;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: 0 0;
+}
+
+.App[data-adjust="true"] .the-rect {
+  background: blue;
+}

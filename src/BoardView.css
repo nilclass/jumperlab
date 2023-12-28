@@ -5,7 +5,6 @@
 }
 
 .BoardView > .viewarea {
-  background: blue;
   position: relative;
 }
 
@@ -25,10 +24,14 @@
   background: blue;
 }
 
-.BoardView > .viewarea > .adjust-button {
+.BoardView > .viewarea > .buttons {
   position: absolute;
   top: 0;
   right: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
 }
 
 .BoardView > .viewarea > .boardrect > .ConnectionLayer {
@@ -36,4 +39,47 @@
   top: 0;
   left: 0;
   pointer-events: none;
+}
+
+.BoardView[data-pin-overlay="false"] .pin {
+  opacity: 0;
+}
+
+.BoardViewModeSelect {
+  color: #ddd;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+}
+
+.RadioGroup {
+  display: flex;
+  justify-content: space-around;
+  gap: 2px;
+}
+
+.RadioGroup > .option {
+  display: block;
+  border: solid 1px #ddd;
+  background: #ddd;
+  color: #333;
+  font-size: 14px;
+  padding: 6px;
+}
+
+.RadioGroup > .option:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.RadioGroup > .option:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.RadioGroup > .option[data-checked="true"] {
+  border-color: #f74599;
+}
+
+.RadioGroup > .option > input {
+  display: none;
 }
