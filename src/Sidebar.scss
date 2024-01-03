@@ -1,12 +1,14 @@
 
 .Sidebar {
-  height: calc(100vh - 62px);
   background: #333;
-  position: absolute;
-  top: 62px;
   left: 0;
   min-width: 330px;
   color: #ddd;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
   > .panel {
     padding: 8px;
     display: flex;
@@ -15,11 +17,13 @@
 
     > .header {
       padding: 4px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
 
       > .title {
         font-weight: bold;
         font-size: 1.4em;
-        text-align: center;
       }
     }
 
@@ -44,6 +48,19 @@
 
           &.name {
             text-align: left;
+
+            > .icon {
+              float: right;
+            }              
+
+            > input {
+              display: block;
+              border: none;
+              width: auto;
+              background: #448;
+              color: inherit;
+              outline: none;
+            }
           }
         }
       }
@@ -51,10 +68,13 @@
   }
 }
 
-button.pencil {
+button.icon {
   border: none;
   background: none;
-  float: right;
   color: #ddd;
   cursor: pointer;
+
+  &.large {
+    font-size: 1.5em;
+  }
 }

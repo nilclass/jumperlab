@@ -1,16 +1,44 @@
 
-.BoardView {
+.App {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   width: 100vw;
-  height: calc(100vh - 62px);
-  margin-top: 62px;
+
+  > .main {
+    flex-grow: 1;
+
+    display: flex;
+    align-items: stretch;
+    flex-direction: row;
+
+    > .Sidebar {
+      flex-grow: 0;
+      overflow: auto;
+    }
+
+    > .BoardView {
+      flex-grow: 1;
+    }
+  }
 }
 
-.Toolbar {
-  position: absolute;
-  top: 0;
-  width: 100vw;
-  box-sizing: border-box;
+button.with-icon {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: space-between;
+
+  > .icon {
+    font-size: 1.4em;
+  }
 }
+
+// .BoardView {
+//   width: 100vw;
+//   height: calc(100vh - 62px);
+//   margin-top: 62px;
+// }
 
 /* -------------------- */
 

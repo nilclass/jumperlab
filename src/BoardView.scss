@@ -2,6 +2,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
+
+  overflow: auto;
 }
 
 .BoardView > .viewarea {
@@ -22,6 +24,12 @@
 
 .BoardView[data-adjust="true"] > .viewarea > .boardrect {
   background: blue;
+}
+
+.BoardView[data-mode="blank"] > .viewarea > .boardrect {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .BoardView > .viewarea > .buttons {

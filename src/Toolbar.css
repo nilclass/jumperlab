@@ -11,6 +11,8 @@ h1 {
 
   background: #333;
   color: #ddd;
+
+  box-sizing: border-box;
 }
 
 .Toolbar > .logo {

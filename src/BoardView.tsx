@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useLayoutEffect, useCallback, useContext } from 'react'
 import { AdjustRect, Rect, defaultRect, rectStyle } from './AdjustRect'
 import { Board } from './Board'
-import './BoardView.css'
+import './BoardView.scss'
 import { ConnectionContext } from './connection'
 import { JumperlessNode } from './jlctlapi'
 import { useSetting } from './Settings'
@@ -55,6 +55,12 @@ const RadioGroup: React.FC<RadioGroupProps> = ({ name, value, options, onChange 
   )
 }
 
+const blankStyle: React.CSSProperties = {
+  width: '100%',
+  height: '100%',
+  transformOrigin: 'center'
+}
+
 /**
  * BoardView shows a `Board`, on top of a background (e.g. camera feed).
  *
@@ -93,8 +99,10 @@ export const BoardView: React.FC<BoardViewProps> = ({ selectedNode, onNodeClick 
   // Four corners of the board in view coordinates (relative to `.viewarea`)
   const viewRect = useMemo<Rect>(() => boardRect.map(([x, y]) => [areaSize[0] * x / bgSize[0], areaSize[1] * y / bgSize[1]]), [boardRect, areaSize, bgSize])
 
+  const [scale, setScale] = useSetting<number>('boardViewScale', 1)
+
   // Applies 3D transform placing the board at the right position on the camera feed
-  const boardRectStyle = useMemo(() => rectStyle(viewRect), [viewRect])
+  const boardRectStyle = useMemo(() => mode === 'blank' ? { ...blankStyle, scale: scale.toString() } : rectStyle(viewRect), [viewRect, mode, scale])
 
   const selectedSegment = useMemo(() => nodeToSegment(selectedNode), [selectedNode])
 
@@ -143,9 +151,26 @@ export const BoardView: React.FC<BoardViewProps> = ({ selectedNode, onNodeClick 
     onNodeClick(segmentToNode(segmentId))
   }, [adjust, selectedSegment, onNodeClick])
 
+  useLayoutEffect(() => {
+    const handleWheel = (e: WheelEvent) => {
+      if (e.altKey) {
+        e.preventDefault()
+        if (e.deltaY < 0) {
+          setScale(scale => scale + 0.1)
+        } else {
+          setScale(scale => Math.max(0.1, scale - 0.1))
+        }
+      }
+    }
+    
+    ref.current!.querySelector<HTMLDivElement>('.viewarea')!.addEventListener('wheel', handleWheel)
+    
+    return () => ref.current?.querySelector<HTMLDivElement>('.viewarea')!.removeEventListener('wheel', handleWheel)
+  }, [setScale])
+
   return (
-    <div className='BoardView' ref={ref} data-adjust={adjust} data-pin-overlay={pinOverlay}>
-      <div className='viewarea' style={{ width: areaSize[0], height: areaSize[1] }}>
+    <div className='BoardView' ref={ref} data-adjust={adjust} data-pin-overlay={pinOverlay} data-mode={mode}>
+      <div className='viewarea' style={mode === 'blank' ? {} : { width: areaSize[0], height: areaSize[1] }}>
         {mode === 'camera'
         ? <CameraLayer onSizeChange={setBgSize} />
     : mode === 'image'
@@ -156,6 +181,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ selectedNode, onNodeClick 
           <ConnectionLayer />
         </div>
         {adjust && <AdjustRect rect={viewRect} onRectChange={handleBoardRectChange} />}
+        {mode !== 'blank' && (
         <div className='buttons'>
           <button className='adjust-button' onClick={() => setAdjust(!adjust)}>
             {adjust ? 'Done' : 'Change board position'}
@@ -164,6 +190,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ selectedNode, onNodeClick 
             Toggle pin overlay
           </button>
         </div>
+        )}
       </div>
     </div>
   )
