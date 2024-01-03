@@ -3,6 +3,7 @@ import { AdjustRect, Rect, defaultRect, rectStyle } from './AdjustRect'
 import { Board } from './Board'
 import './BoardView.scss'
 import { ConnectionContext } from './connection'
+import { ImageBoardView } from './ImageBoardView'
 import { JumperlessNode } from './jlctlapi'
 import { useSetting } from './Settings'
 
@@ -162,20 +163,25 @@ export const BoardView: React.FC<BoardViewProps> = ({ selectedNode, onNodeClick 
         }
       }
     }
+
+    if (ref.current) {
+      ref.current.querySelector<HTMLDivElement>('.viewarea')!.addEventListener('wheel', handleWheel)
     
-    ref.current!.querySelector<HTMLDivElement>('.viewarea')!.addEventListener('wheel', handleWheel)
-    
-    return () => ref.current?.querySelector<HTMLDivElement>('.viewarea')!.removeEventListener('wheel', handleWheel)
+      return () => ref.current?.querySelector<HTMLDivElement>('.viewarea')!.removeEventListener('wheel', handleWheel)
+    }
   }, [setScale])
+
+  if (mode === 'image') {
+    return <ImageBoardView />
+  }
 
   return (
     <div className='BoardView' ref={ref} data-adjust={adjust} data-pin-overlay={pinOverlay} data-mode={mode}>
       <div className='viewarea' style={mode === 'blank' ? {} : { width: areaSize[0], height: areaSize[1] }}>
         {mode === 'camera'
         ? <CameraLayer onSizeChange={setBgSize} />
-    : mode === 'image'
-    ? <ImageLayer onSizeChange={setBgSize} />
-          : <BlankLayer onSizeChange={setBgSize} />}
+        : mode === 'blank'
+        ? <BlankLayer onSizeChange={setBgSize} /> : null}
         <div className='boardrect' style={boardRectStyle}>
           <Board onSegmentClick={handleSegmentClick} selected={selectedSegment} />
           <ConnectionLayer />
@@ -217,14 +223,13 @@ function nodeToSegment(node: JumperlessNode | null): string | null {
 const BlankLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> = ({ onSizeChange }) => {
   return null
 }
-
-
-const ImageLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> = ({ onSizeChange }) => {
-  const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    onSizeChange([e.currentTarget.offsetWidth, e.currentTarget.offsetHeight])
-  }
-  return <img src="images/default-board-pic.jpg" onLoad={handleLoad} />
-}
+/* 
+* const ImageLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> = ({ onSizeChange }) => {
+*   const handleLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
+*     onSizeChange([e.currentTarget.offsetWidth, e.currentTarget.offsetHeight])
+*   }
+*   return <img src="images/default-board-pic.jpg" onLoad={handleLoad} />
+* } */
 
 const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> = ({ onSizeChange }) => {
   const ref = useRef<HTMLVideoElement>(null)
