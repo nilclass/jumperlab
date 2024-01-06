@@ -1,0 +1,11 @@
+.ImageBoardView {
+  flex-grow: 1;
+}
+
+.ImageBoardView > svg {
+  max-height: 90vh;
+}
+
+.rowColor { 
+  fill: #fb8f8f;
+}

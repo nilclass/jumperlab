@@ -4,7 +4,7 @@ import { Board } from './Board'
 import './BoardView.scss'
 import { RadioGroup } from './components/RadioGroup'
 import { ConnectionContext } from './connection'
-import { ImageBoardView } from './ImageBoardView'
+import  ImageBoardView  from './ImageBoardView' //no idea why removing braces fixes it
 import { InteractionContext } from './interaction'
 import { JumperlessNode } from './jlctlapi'
 import { JumperlessStateContext } from './JumperlessState'
