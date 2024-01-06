@@ -60,34 +60,3 @@
   gap: 8px;
   padding: 0 8px;
 }
-
-.RadioGroup {
-  display: flex;
-  justify-content: space-around;
-  gap: 2px;
-}
-
-.RadioGroup > .option {
-  display: block;
-  border: solid 1px #ddd;
-  background: #ddd;
-  color: #333;
-  font-size: 14px;
-  padding: 6px;
-}
-
-.RadioGroup > .option:first-child {
-  border-radius: 4px 0 0 4px;
-}
-
-.RadioGroup > .option:last-child {
-  border-radius: 0 4px 4px 0;
-}
-
-.RadioGroup > .option[data-checked="true"] {
-  border-color: #f74599;
-}
-
-.RadioGroup > .option > input {
-  display: none;
-}

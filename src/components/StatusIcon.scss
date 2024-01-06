@@ -1,0 +1,9 @@
+
+.StatusIcon {
+  filter: grayscale(100%);
+  height: 32px;
+}
+
+.StatusIcon.ok {
+  filter: none;
+}

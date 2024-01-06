@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
-import { JlCtl, Bridge, Netlist, NotConnected } from './jlctlapi'
+import { JlCtl, Bridge, Netlist, NotConnected, SupplySwitchPos } from './jlctlapi'
 import './connection.css'
+import { StatusIcon } from './components/StatusIcon'
 
 export type ConnectionContextType = {
   // interface to the jlctl server
@@ -14,6 +15,7 @@ export type ConnectionContextType = {
 
   netlist: Netlist | null
   bridges: Array<Bridge>
+  supplySwitchPos: SupplySwitchPos
 
   // updates the context, by re-loading all info from the backend
   poll: () => Promise<void>
@@ -44,12 +46,6 @@ export const ConnectionWidget: React.FC<{ pollIntervalMs: number }> = ({ pollInt
   )
 }
 
-const StatusIcon: React.FC<{ ok: boolean, src: string, title: string }> = ({ ok, src, title }) => {
-  return (
-    <img className={`StatusIcon ${ok ? 'ok' : ''}`} src={src} title={`${title}: ${ok ? 'Yes' : 'No'}`} />
-  )
-}
-
 export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.ReactNode }> = ({ baseUrl, children }) => {
   const contextRef = useRef<ConnectionContextType | null>(null)
   const [initialized, setInitialized] = useState(false)
@@ -61,11 +57,13 @@ export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.Reac
       ready: false,
       netlist: null,
       bridges: [],
+      supplySwitchPos: '3.3V',
 
       async poll() {
         try {
           ctx.netlist = await ctx.jlctl!.getNetlist()
-          ctx.bridges = await ctx.jlctl!.getBridges()
+          ctx.supplySwitchPos = await ctx.jlctl!.getSupplySwitchPos()
+          /* ctx.bridges = await ctx.jlctl!.getBridges() */
         } catch(e) {
           // if we received a 502 error (mapped to "NotConnected"),
           // the server is reachable, but no board was detected.

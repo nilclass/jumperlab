@@ -1,20 +1,33 @@
-import React, { useState, createContext, useCallback } from 'react'
-import { Netlist, NetlistEntry } from './jlctlapi'
+import React, { useState, createContext, useCallback, useContext, useEffect } from 'react'
+import { ConnectionContext } from './connection'
+import { Netlist, NetlistEntry, SupplySwitchPos } from './jlctlapi'
 
 type JumperlessStateContextType = {
+  supplySwitchPos: SupplySwitchPos
   netlist: Netlist
   updateNet: (index: number, update: UpdateFn) => void
   addNet: () => number
   removeNet: (index: number) => void
+  setSupplySwitchPos: (pos: SupplySwitchPos) => void,
+  syncToDevice: () => Promise<void>
+  syncFromDevice: () => Promise<void>
+  syncAuto: boolean
+  setSyncAuto: (value: boolean) => void
 }
 
 type UpdateFn = (net: NetlistEntry) => NetlistEntry
 
 const emptyState: JumperlessStateContextType = {
+  supplySwitchPos: '3.3V',
   netlist: [],
   updateNet() {},
   addNet() { return -1 },
   removeNet() {},
+  setSupplySwitchPos() {},
+  async syncToDevice() {},
+  async syncFromDevice() {},
+  syncAuto: false,
+  setSyncAuto: () => {},
 }
 
 export const JumperlessStateContext = createContext<JumperlessStateContextType>(emptyState)
@@ -91,6 +104,41 @@ function makeNet(index: number): NetlistEntry {
 
 export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [netlist, setNetlist] = useState(example)
+  const [supplySwitchPos, setSupplySwitchPos] = useState<SupplySwitchPos>('3.3V')
+  const conn = useContext(ConnectionContext)!;
+  const [syncOnce, setSyncOnce] = useState(false)
+  const [syncAuto, setSyncAuto] = useState(false)
+
+  async function syncToDevice() {
+    if (conn.jlctl === null) {
+      throw new Error('Cannot sync, no device!')
+    }
+    await conn.jlctl.setSupplySwitchPos(supplySwitchPos)
+    await syncFromDevice()
+  }
+
+  async function syncFromDevice() {
+    if (conn.jlctl === null) {
+      throw new Error('Cannot sync, no device!')
+    }
+    await conn.poll()
+    setSyncOnce(true)
+  }
+
+  useEffect(() => {
+    if (syncOnce) {
+      //setNetlist(conn.netlist)
+      setSupplySwitchPos(conn.supplySwitchPos)
+      setSyncOnce(false)
+    }
+  }, [syncOnce])
+
+  useEffect(() => {
+    if (syncAuto) {
+      syncToDevice()
+    }
+  }, [syncAuto, netlist, supplySwitchPos])
+
   const updateNet = useCallback((index: number, update: UpdateFn) => {
     setNetlist(netlist => netlist.map(net => net.index === index ? update(net) : net))
   }, [setNetlist])
@@ -111,10 +159,16 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
   
   return (
     <JumperlessStateContext.Provider value={{
+      supplySwitchPos,
       netlist,
       updateNet,
       addNet,
       removeNet,
+      setSupplySwitchPos,
+      syncToDevice,
+      syncFromDevice,
+      syncAuto,
+      setSyncAuto,
     }}>
       {children}
     </JumperlessStateContext.Provider>

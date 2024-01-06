@@ -1,6 +1,5 @@
 import React from 'react'
 import { BoardViewModeSelect } from './BoardView'
-import { ConnectionWidget } from './connection'
 import { useOpenDialog } from './dialogs'
 import { SettingsDialog } from './Settings'
 import { Mode } from './App'
@@ -20,7 +19,6 @@ export const Toolbar: React.FC<{ mode: Mode }> = ({ mode }) => {
         <code>{mode}</code>
       </div>
       <BoardViewModeSelect />
-      <ConnectionWidget pollIntervalMs={2000} />
       <button className='with-icon' onClick={(e) => openDialog(<SettingsDialog />, e)}>
         <div className='icon'>⚙</div>
         Settings

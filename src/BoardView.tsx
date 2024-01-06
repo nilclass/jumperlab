@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useMemo, useLayoutEffect, useCallba
 import { AdjustRect, Rect, defaultRect, rectStyle } from './AdjustRect'
 import { Board } from './Board'
 import './BoardView.scss'
+import { RadioGroup } from './components/RadioGroup'
 import { ConnectionContext } from './connection'
 import { ImageBoardView } from './ImageBoardView'
 import { JumperlessNode } from './jlctlapi'
@@ -25,33 +26,6 @@ export const BoardViewModeSelect = () => {
         { value: 'camera', label: '📹', title: 'Camera' },
         { value: 'blank', label: '▢', title: 'Blank' },
       ]} name='boardViewMode' value={mode} onChange={setMode} />
-    </div>
-  )
-}
-
-type RadioGroupProps = {
-  name: string
-  value: string
-  options: Array<{
-    value: string
-    label: React.ReactNode
-    title: string
-  }>
-  onChange: (value: string) => void
-}
-
-const RadioGroup: React.FC<RadioGroupProps> = ({ name, value, options, onChange }) => {
-  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    onChange(e.currentTarget.value)
-  }, [onChange])
-  return (
-    <div className='RadioGroup'>
-      {options.map(opt => (
-        <label className='option' data-checked={opt.value === value} key={opt.value} title={opt.title}>
-          {opt.label}
-          <input type='radio' name={name} value={opt.value} checked={opt.value === value} onChange={handleChange} />
-        </label>
-      ))}
     </div>
   )
 }

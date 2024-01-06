@@ -47,7 +47,7 @@ const InteractionController: React.FC<InteractionControllerProps> = ({ children 
     } else if (mode === 'connect') {
       if (jlctl) {
         console.log('CONNECTING', selectedNode, node)
-        jlctl.addBridges([[selectedNode, node] as Bridge]).then(poll)
+        //jlctl.addBridges([[selectedNode, node] as Bridge]).then(poll)
         setMode('select')
       } else {
         throw new Error('jlctl not ready, cannot add bridge!')

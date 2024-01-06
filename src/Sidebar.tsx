@@ -1,5 +1,7 @@
 import React from 'react'
+import { ConnectionPanel } from './panels/ConnectionPanel'
 import { NetlistPanel } from './panels/NetlistPanel'
+import { SupplySwitchPanel } from './panels/SupplySwitchPanel'
 import './Sidebar.scss'
 
 export const Sidebar: React.FC = () => {
@@ -13,6 +15,8 @@ export const Sidebar: React.FC = () => {
         <div className='content'>
         </div>
           </div> */}
+      <ConnectionPanel />
+      <SupplySwitchPanel />
       <NetlistPanel />
     </div>
   )
