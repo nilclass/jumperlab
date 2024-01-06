@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { BoardViewModeSelect } from './BoardView'
 import { useOpenDialog } from './dialogs'
 import { SettingsDialog } from './Settings'
-import { Mode } from './App'
 import './Toolbar.css'
+import { InteractionContext } from './interaction'
 
-export const Toolbar: React.FC<{ mode: Mode }> = ({ mode }) => {
+export const Toolbar: React.FC = () => {
+  const { mode } = useContext(InteractionContext)!
   const openDialog = useOpenDialog()
 
   return (

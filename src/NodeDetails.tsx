@@ -1,7 +1,7 @@
 import React, { useRef } from 'react'
 import { CSSTransition } from 'react-transition-group'
 import { JumperlessNode } from './jlctlapi'
-import { Mode } from './App'
+import { Mode } from './interaction'
 import './NodeDetails.css'
 
 type NodeDetailsProps = {

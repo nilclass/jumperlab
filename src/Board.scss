@@ -46,6 +46,12 @@
     outline: solid 1px red;
   }
 
+  .Segment.highlight {
+    > .pin {
+      border-color: #f74599;
+    }
+  }
+
   .Segment > .label {
     position: absolute;
     background: black;

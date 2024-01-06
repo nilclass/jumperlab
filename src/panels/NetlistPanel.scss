@@ -1,6 +1,16 @@
 .NetlistPanel {
   > .content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
     > .net {
+      padding: 4px;
+
+      &.highlight {
+        background: #448;
+      }
+
       > .attributes {
         display: flex;
         align-items: center;
@@ -11,13 +21,15 @@
           font-size: 20px;
           font-family: monospace;
           flex-grow: 0;
+          color: #ddf;
         }
 
         > .name {
           font-size: 18px;
           flex-grow: 1;
+          font-weight: bold;
         }
-      }      
+      }
     }
   }
 }
@@ -31,4 +43,9 @@
   border-radius: 4px;
   font-family: monospace;
   display: inline-block;
+
+  &.highlight {
+    color: #333;
+    background: #f74599;
+  }
 }

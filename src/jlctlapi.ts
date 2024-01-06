@@ -6,8 +6,9 @@ export type NetlistEntry = {
   name: string
   number: number
   nodes: Array<JumperlessNode>
-  bridges: string
   color: string
+  special: boolean
+  machine: boolean
 }
 export type Netlist = Array<NetlistEntry>
 

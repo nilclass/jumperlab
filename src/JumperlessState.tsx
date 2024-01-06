@@ -1,6 +1,7 @@
 import React, { useState, createContext, useCallback, useContext, useEffect } from 'react'
 import { ConnectionContext } from './connection'
-import { Netlist, NetlistEntry, SupplySwitchPos } from './jlctlapi'
+import { JumperlessNode, Netlist, NetlistEntry, SupplySwitchPos } from './jlctlapi'
+import { netlistAddBridge } from './netlist'
 
 type JumperlessStateContextType = {
   supplySwitchPos: SupplySwitchPos
@@ -13,6 +14,7 @@ type JumperlessStateContextType = {
   syncFromDevice: () => Promise<void>
   syncAuto: boolean
   setSyncAuto: (value: boolean) => void
+  addBridge: (a: JumperlessNode, b: JumperlessNode) => void
 }
 
 type UpdateFn = (net: NetlistEntry) => NetlistEntry
@@ -28,6 +30,7 @@ const emptyState: JumperlessStateContextType = {
   async syncFromDevice() {},
   syncAuto: false,
   setSyncAuto: () => {},
+  addBridge() {},
 }
 
 export const JumperlessStateContext = createContext<JumperlessStateContextType>(emptyState)
@@ -38,56 +41,63 @@ const example: Netlist = [
     "name": "GND",
     "number": 1,
     "nodes": ["GND"],
-    "bridges": "{0-0}",
-    color: '#00ff30'
+    color: '#00ff30',
+    special: true,
+    machine: false,
   },
   {
     "index": 2,
     "name": "+5V",
     "number": 2,
     "nodes": ["5V"],
-    "bridges": "{0-0}",
-    color: '#ff4114'
+    color: '#ff4114',
+    special: true,
+    machine: false,
   },
   {
     "index": 3,
     "name": "+3.3V",
     "number": 3,
     "nodes": ["3V3"],
-    "bridges": "{0-0}",
-    color: '#ff1040'
+    color: '#ff1040',
+    special: true,
+    machine: false,
   },
   {
     "index": 4,
     "name": "DAC 0",
     "number": 4,
     "nodes": ["DAC_0"],
-    "bridges": "{0-0}",
-    color: '#ef787a'
+    color: '#ef787a',
+    special: true,
+    machine: false,
   },
   {
     "index": 5,
     "name": "DAC 1",
     "number": 5,
     "nodes": ["DAC_1"],
-    "bridges": "{0-0}",
-    color: '#ef407f'
+    color: '#ef407f',
+    special: true,
+    machine: false,
   },
   {
     "index": 6,
     "name": "I Sense +",
     "number": 6,
     "nodes": ["I_POS"],
-    "bridges": "{0-0}",
-    color: '#ffffff'
+    color: '#ffffff',
+    special: true,
+    machine: false,
   },
   {
     "index": 7,
     "name": "I Sense -",
     "number": 7,
     "nodes": ["I_NEG"],
-    "bridges": "{0-0}",
-    color: '#ffffff'
+    color: '#ffffff',
+    special: true,
+    machine: false,
   }
 ]
 
@@ -97,8 +107,9 @@ function makeNet(index: number): NetlistEntry {
     name: `Net ${index}`,
     number: index,
     nodes: [],
-    bridges: '',
-    color: '#000000'
+    color: '#000000',
+    special: false,
+    machine: true,
   }
 }
 
@@ -156,6 +167,10 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
     }
     setNetlist(netlist => netlist.filter(net => net.index !== index))
   }, [setNetlist])
+
+  const addBridge = useCallback((a: JumperlessNode, b: JumperlessNode) => {
+    setNetlist(netlist => netlistAddBridge(netlist, [a, b]))
+  }, [setNetlist])
   
   return (
     <JumperlessStateContext.Provider value={{
@@ -169,6 +184,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
       syncFromDevice,
       syncAuto,
       setSyncAuto,
+      addBridge,
     }}>
       {children}
     </JumperlessStateContext.Provider>

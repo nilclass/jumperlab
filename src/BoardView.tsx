@@ -5,8 +5,11 @@ import './BoardView.scss'
 import { RadioGroup } from './components/RadioGroup'
 import { ConnectionContext } from './connection'
 import { ImageBoardView } from './ImageBoardView'
+import { InteractionContext } from './interaction'
 import { JumperlessNode } from './jlctlapi'
+import { JumperlessStateContext } from './JumperlessState'
 import { useSetting } from './Settings'
+import { netlistGetNodes } from './netlist'
 
 type BoardViewProps = {
   selectedNode: JumperlessNode | null
@@ -43,7 +46,9 @@ const blankStyle: React.CSSProperties = {
  *
  * On top of the board, a connection layer will be shown.
  */
-export const BoardView: React.FC<BoardViewProps> = ({ selectedNode, onNodeClick }) => {
+export const BoardView: React.FC = () => {
+  const { netlist } = useContext(JumperlessStateContext)
+  const { selectedNode, handleNodeClick: onNodeClick, setHighlightedNode, highlightedNode, highlightedNet } = useContext(InteractionContext)!
   const [mode, setMode] = useSetting('boardViewMode', 'image')
   const ref = useRef<HTMLDivElement>(null)
   // size of the view area (detected, changes on window resize)
@@ -51,6 +56,17 @@ export const BoardView: React.FC<BoardViewProps> = ({ selectedNode, onNodeClick 
 
   // size of the background (e.g. camera feed) in source coordinates (e.g. physical camera pixels)
   const [bgSize, setBgSize] = useState([100, 100])
+
+  const highlighted = useMemo(() => {
+    if (highlightedNode) {
+      if (typeof highlightedNode === 'number') {
+        return [highlightedNode]
+      }
+    } else if (highlightedNet) {
+      return netlistGetNodes(netlist, highlightedNet).filter(node => typeof node === 'number') as Array<number>
+    }
+    return []
+  }, [highlightedNode, highlightedNet])
 
   // size of the background in view coordinates. Depending on the ratios of the view and background,
   // either the width or the height of this will equal the one from viewSize. The respective other
@@ -126,6 +142,22 @@ export const BoardView: React.FC<BoardViewProps> = ({ selectedNode, onNodeClick 
     onNodeClick(segmentToNode(segmentId))
   }, [adjust, selectedSegment, onNodeClick])
 
+  const handleSegmentHover = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (adjust) {
+      return
+    }
+
+    if (e.type === 'mouseleave') {
+      setHighlightedNode(null)
+    } else {
+      const segmentId = e.currentTarget.dataset.id
+      if (!segmentId) {
+        throw new Error('BUG: hover on segment with no segment ID')
+      }
+      setHighlightedNode(segmentToNode(segmentId))
+    }
+  }, [setHighlightedNode])
+
   useLayoutEffect(() => {
     const handleWheel = (e: WheelEvent) => {
       if (e.altKey) {
@@ -157,7 +189,7 @@ export const BoardView: React.FC<BoardViewProps> = ({ selectedNode, onNodeClick 
         : mode === 'blank'
         ? <BlankLayer onSizeChange={setBgSize} /> : null}
         <div className='boardrect' style={boardRectStyle}>
-          <Board onSegmentClick={handleSegmentClick} selected={selectedSegment} />
+          <Board onSegmentClick={handleSegmentClick} onSegmentHover={handleSegmentHover} selected={selectedSegment} highlighted={highlighted} />
           <ConnectionLayer />
         </div>
         {adjust && <AdjustRect rect={viewRect} onRectChange={handleBoardRectChange} />}
