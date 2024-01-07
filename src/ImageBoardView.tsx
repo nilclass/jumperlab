@@ -1,10 +1,26 @@
-import * as React from "react"
+import React, { useContext, useMemo } from "react"
+import { JumperlessStateContext } from './JumperlessState'
+import { SupplySwitchPos } from "./jlctlapi"
 import './ImageBoardView.css'
 
-
-
+const SWITCH_OPTS: Array<SupplySwitchPos> = [
+  '3.3V',
+  '5V',
+  '8V',
+]
 
 function ImageBoardView(props: any) {
+  const { supplySwitchPos, setSupplySwitchPos } = useContext(JumperlessStateContext)
+
+  const switchDiff = useMemo(() => {
+    return (SWITCH_OPTS.indexOf(supplySwitchPos) - 1) * 55
+  }, [supplySwitchPos])
+
+  function cycleSwitchPos() {
+    const i = (SWITCH_OPTS.indexOf(supplySwitchPos) + 1) % SWITCH_OPTS.length
+    setSupplySwitchPos(SWITCH_OPTS[i])
+  }
+
   return (
     <div className="ImageBoardView">
 
@@ -1259,7 +1275,7 @@ function ImageBoardView(props: any) {
               width={46.692024}
               height={54.439331}
               x={366.3699}
-              y={957.55298}
+              y={957.55298 + switchDiff}
               ry={7.3958402}
             />
           </g>
@@ -2493,7 +2509,7 @@ function ImageBoardView(props: any) {
                 ry={0.37795833}
               />
             </g>
-            <g id="railselectionswitch-clickable" style={{ opacity: 0 }}>
+            <g id="railselectionswitch-clickable" style={{ opacity: 0 }} onClick={cycleSwitchPos}>
               <rect
                 style={{
                   opacity: 0,
