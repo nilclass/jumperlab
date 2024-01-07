@@ -1,0 +1,80 @@
+.ImageBoardView {
+  flex-grow: 1;
+
+  > svg {
+    max-height: 90vh;
+  }
+
+  .row {
+    opacity: 1;
+    fill: #fff;
+    stroke: none;
+    strokeWidth: 1.01397;
+
+    &:hover {
+      fill: #fb8f8f;
+    }
+  }
+
+  .nanoPin {
+    opacity: 1;
+    fill: #fff;
+    fill-rule: evenodd;
+    stroke: #000;
+    stroke-width: 0.105827;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    &:hover {
+      fill: #fb8f8f;
+    }
+  }
+
+  .rail {
+    opacity: 1;
+    fill: #fff;
+    fill-rule: evenodd;
+    stroke: #000;
+    stroke-width: 0.0993419;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    &:hover {
+      fill: #fb8f8f;
+    }
+  }
+
+  #railselectionswitch {
+    .clickarea {
+      opacity: 1;
+      fill: gray;
+      fill-rule: evenodd;
+      stroke: #000;
+      stroke-width: 0.171648;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .handle {
+      opacity: 1;
+      fill: #2e2e2e;
+      fill-opacity: 1;
+      fill-rule: evenodd;
+      stroke: #292929;
+      stroke-width: 4.29444;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: none;
+      stroke-opacity: 1;
+    }
+
+    &:hover .handle {
+      stroke: #fb8f8f;
+    }
+  }
+}
+
+
+.rowColor { 
+  fill: #fb8f8f;
+}
