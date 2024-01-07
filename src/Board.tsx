@@ -24,6 +24,7 @@ export const Board: React.FC<BoardProps> = ({ onSegmentClick, onSegmentHover, se
         <PowerRow net='GND' labelPos='bottom' />
       </div>
     </BoardContext.Provider>
+    
   )
 }
 
