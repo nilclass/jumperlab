@@ -1,19 +1,41 @@
-import React, { useContext, useMemo } from "react"
+import React, { useContext, useMemo, useRef, useState } from "react"
 import { JumperlessStateContext } from './JumperlessState'
 import { SupplySwitchPos } from "./jlctlapi"
+import {
+  useFloating,
+  autoUpdate,
+  arrow,
+  offset,
+  flip,
+  shift,
+  useHover,
+  useFocus,
+  useDismiss,
+  useRole,
+  useInteractions,
+  FloatingPortal,
+  FloatingArrow,
+} from "@floating-ui/react"
 import './ImageBoardView.scss'
 
 const SWITCH_OPTS: Array<SupplySwitchPos> = [
-  '3.3V',
-  '5V',
   '8V',
+  '5V',
+  '3.3V',
 ]
+
+const SWITCH_LABELS: { [key in SupplySwitchPos]: string } = {
+  '3.3V': '+3.3V',
+  '5V': '+5V',
+  '8V': '±8V',
+}
+
 
 function ImageBoardView(props: any) {
   const { supplySwitchPos, setSupplySwitchPos } = useContext(JumperlessStateContext)
 
   const switchDiff = useMemo(() => {
-    return -(SWITCH_OPTS.indexOf(supplySwitchPos) - 1) * 55
+    return (SWITCH_OPTS.indexOf(supplySwitchPos) - 1) * 55
   }, [supplySwitchPos])
 
   function cycleSwitchPos() {
@@ -21,14 +43,15 @@ function ImageBoardView(props: any) {
     setSupplySwitchPos(SWITCH_OPTS[i])
   }
 
+  const { arrow, refs, getReferenceProps, getFloatingProps, isOpen, floatingStyles } = useRailswitchTooltip()
+
   return (
     <div className="ImageBoardView">
-
       <svg
         viewBox="0 0 3200 3200"
         width="100%"
         height="auto"
-        preserveAspectRatio="xMidYMid "
+        preserveAspectRatio="xMidYMid"
         {...props}
       >
         <g id="g1">
@@ -662,7 +685,7 @@ function ImageBoardView(props: any) {
             y={615.39575}
             ry={45.223984}
           />
-          <g id="railselectionswitch" onClick={cycleSwitchPos}>
+          <g id="railselectionswitch" onClick={cycleSwitchPos} ref={refs.setReference} {...getReferenceProps()}>
             <rect
               id="switchclickarea"
               className='clickarea'
@@ -695,8 +718,59 @@ function ImageBoardView(props: any) {
           />
         </g>
       </svg>
+      <FloatingPortal>
+        {isOpen && (
+          <div
+            className="railSwitchTooltip"
+            ref={refs.setFloating}
+            style={floatingStyles}
+            {...getFloatingProps()}
+          >
+            {arrow}
+            <div className='value'>{SWITCH_LABELS[supplySwitchPos]}</div>
+          </div>
+        )}
+      </FloatingPortal>
     </div>
   )
+}
+
+function useRailswitchTooltip() {
+  const [isOpen, setIsOpen] = useState(false)
+  const arrowRef = useRef(null)
+  const { refs, floatingStyles, context } = useFloating({
+    open: isOpen,
+    onOpenChange: setIsOpen,
+    placement: "left",
+    whileElementsMounted: autoUpdate,
+    middleware: [
+      arrow({ element: arrowRef }),
+      offset(5),
+      flip({
+        fallbackAxisSideDirection: "start"
+      }),
+      shift()
+    ]
+  });
+  const hover = useHover(context, { move: false });
+  const focus = useFocus(context);
+  const dismiss = useDismiss(context);
+  const role = useRole(context, { role: "tooltip" });
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    hover,
+    focus,
+    dismiss,
+    role
+  ]);
+
+  return {
+    arrow: <FloatingArrow ref={arrowRef} context={context} fill='#BF4040' />,
+    isOpen,
+    floatingStyles,
+    refs,
+    getReferenceProps,
+    getFloatingProps,
+  }
 }
 
 export default ImageBoardView
