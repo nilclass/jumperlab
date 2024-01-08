@@ -1,9 +1,10 @@
+import { uniq } from 'lodash'
 import { Netlist, NetlistEntry, Bridge, JumperlessNode } from './jlctlapi'
 
 export function netlistAddBridge(netlist: Netlist, bridge: Bridge): Netlist {
   const netA = netlist.find(net => net.nodes.includes(bridge[0]))
   const netB = netlist.find(net => net.nodes.includes(bridge[1]))
-  if (netA && netB) {
+  if (netA && netB && netA !== netB) {
     return netlistMergeNets(netlist, netA, netB)
   } else if (netA) {
     return netlistAddNode(netlist, netA, bridge[1])
@@ -19,13 +20,13 @@ function netlistMergeNets(netlist: Netlist, a: NetlistEntry, b: NetlistEntry): N
     throw new Error('Cannot merge special nets')
   }
   if (b.special) {
-    return updateNet(netlist, b.index, n => ({ ...n, nodes: [...n.nodes, ...a.nodes] }))
+    return removeNet(updateNet(netlist, b.index, n => ({ ...n, nodes: uniq([...n.nodes, ...a.nodes]) })), a.index)
   }
-  return updateNet(netlist, a.index, n => ({ ...n, nodes: [...n.nodes, ...b.nodes] }))
+  return removeNet(updateNet(netlist, a.index, n => ({ ...n, nodes: uniq([...n.nodes, ...b.nodes]) })), b.index)
 }
 
 function netlistAddNode(netlist: Netlist, net: NetlistEntry, node: JumperlessNode): Netlist {
-  return updateNet(netlist, net.index, n => ({ ...n, nodes: [...n.nodes, node] }))
+  return updateNet(netlist, net.index, n => ({ ...n, nodes: uniq([...n.nodes, node]) }))
 }
 
 function netlistNewNet(netlist: Netlist, nodes: Array<JumperlessNode>): Netlist {
@@ -48,6 +49,10 @@ function updateNet(netlist: Netlist, index: number, update: (net: NetlistEntry) 
   return netlist.map(net => net.index === index ? update(net) : net)
 }
 
+function removeNet(netlist: Netlist, index: number): Netlist {
+  return netlist.filter(net => net.index !== index)
+}
+
 export function netlistGetNodes(netlist: Netlist, index: Number): Array<JumperlessNode> {
   const net = netlist.find(net => net.index === index)
   if (!net) {
@@ -55,3 +60,4 @@ export function netlistGetNodes(netlist: Netlist, index: Number): Array<Jumperle
   }
   return net.nodes
 }
+

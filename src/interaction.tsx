@@ -46,16 +46,19 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
   function handleNodeClick(node: JumperlessNode | null) {
     if (mode === 'select') {
       setSelectedNode(node)
-    } else if (mode === 'connect' && node && selectedNode) {
-      addBridge(selectedNode, node)
-      setMode('select')
+    } else if (mode === 'connect') {
+      if (node) {
+        if (selectedNode) {
+          addBridge(selectedNode, node)
+          setSelectedNode(null)
+        } else {
+          setSelectedNode(node)
+        }
+      }
     }
   }
 
   function handleSetMode(mode: Mode) {
-    if (mode === 'connect' && !selectedNode) {
-      throw new Error(`BUG: can't enter "connect" mode without a selected node!`)
-    }
     setMode(mode)
   }
 

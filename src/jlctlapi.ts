@@ -14,6 +14,10 @@ export type Netlist = Array<NetlistEntry>
 
 export type SupplySwitchPos = '8V' | '3.3V' | '5V'
 
+export type Status = {
+  connected: boolean
+}
+
 export function makeBridge(a: string, b: string): Bridge {
   return [makeNode(a), makeNode(b)]
 }
@@ -39,6 +43,11 @@ export class JlCtl {
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl
+  }
+
+  async getStatus(): Promise<Status> {
+    const response = await fetch(`${this.baseUrl}/status`)
+    return await response.json() as Status
   }
 
   async getNetlist(): Promise<Array<NetlistEntry>> {

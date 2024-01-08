@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useState } from 'react'
 import { InteractionContext } from '../interaction'
 import { JumperlessNode, NetlistEntry } from '../jlctlapi'
 import { JumperlessStateContext } from '../JumperlessState'
+import { NodeRef } from '../NodeRef'
 import './NetlistPanel.scss'
 
 export const NetlistPanel: React.FC = () => {
@@ -67,22 +68,4 @@ export const NetlistPanel: React.FC = () => {
 
 function isSpecial(net: NetlistEntry) {
   return net.index <= 7
-}
-
-type NodeRefProps = {
-  node: JumperlessNode
-  highlighted?: boolean
-  onHover: (node: JumperlessNode | null) => void
-  onClick: (node: JumperlessNode) => void
-}
-
-const NodeRef: React.FC<NodeRefProps> = ({ node, highlighted, onHover, onClick }) => {
-  const handleEnter = useCallback(() => onHover(node), [onHover, node])
-  const handleLeave = useCallback(() => onHover(null), [onHover])
-  const handleClick = useCallback(() => onClick(node), [onClick])
-  return (
-    <button className={`NodeRef ${highlighted ? 'highlight' : ''}`} onMouseEnter={handleEnter} onMouseLeave={handleLeave} onClick={handleClick}>
-      {node}
-    </button>
-  )
 }

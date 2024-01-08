@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react'
-import { JlCtl, Bridge, Netlist, NotConnected, SupplySwitchPos } from './jlctlapi'
+import { JlCtl, Bridge, Netlist, NotConnected, SupplySwitchPos, Status } from './jlctlapi'
 import './connection.css'
 import { StatusIcon } from './components/StatusIcon'
 
@@ -60,10 +60,13 @@ export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.Reac
       supplySwitchPos: '3.3V',
 
       async poll() {
+        let status: Status
         try {
-          ctx.netlist = await ctx.jlctl!.getNetlist()
-          ctx.supplySwitchPos = await ctx.jlctl!.getSupplySwitchPos()
-          /* ctx.bridges = await ctx.jlctl!.getBridges() */
+          status = await ctx.jlctl!.getStatus()
+          if (status.connected) {
+            ctx.netlist = await ctx.jlctl!.getNetlist()
+            ctx.supplySwitchPos = await ctx.jlctl!.getSupplySwitchPos()
+          }
         } catch(e) {
           // if we received a 502 error (mapped to "NotConnected"),
           // the server is reachable, but no board was detected.
@@ -73,7 +76,7 @@ export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.Reac
           return
         }
         ctx.reachable = true
-        ctx.ready = true
+        ctx.ready = status.connected
       }
     }
 

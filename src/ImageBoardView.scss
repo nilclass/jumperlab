@@ -1,8 +1,34 @@
 .ImageBoardView {
   flex-grow: 1;
+  position: relative;
 
   > svg {
     max-height: 90vh;
+  }
+
+  .SelectionInfo {
+    position: absolute;
+    top: 0;
+    left: 16px;
+    z-index: 10;
+
+    &.SelectionInfo-enter {
+      top: -41px;
+    }
+
+    &.SelectionInfo-enter-active {
+      top: 0;
+      transition: top 200ms;
+    }
+
+    &.SelectionInfo-exit {
+      top: 0;
+    }
+
+    &.SelectionInfo-exit-active {
+      top: -41px;
+      transition: top 200ms;
+    }
   }
 
   .row {
@@ -13,6 +39,10 @@
 
     &:hover {
       fill: #fb8f8f;
+    }
+
+    &.selected {
+      fill: #8ffb8f;
     }
   }
 
@@ -82,6 +112,6 @@
   border-radius: 8px;
 }
 
-.rowColor { 
+.rowColor {
   fill: #fb8f8f;
 }

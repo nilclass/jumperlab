@@ -4,9 +4,10 @@ import { useOpenDialog } from './dialogs'
 import { SettingsDialog } from './Settings'
 import './Toolbar.css'
 import { InteractionContext } from './interaction'
+import { RadioGroup } from './components/RadioGroup'
 
 export const Toolbar: React.FC = () => {
-  const { mode } = useContext(InteractionContext)!
+  const { mode, handleSetMode } = useContext(InteractionContext)!
   const openDialog = useOpenDialog()
 
   return (
@@ -16,8 +17,10 @@ export const Toolbar: React.FC = () => {
         <h1>Jumperlab</h1>
       </div>
       <div>
-        <strong>Mode: </strong>
-        <code>{mode}</code>
+        <RadioGroup options={[
+          { value: 'select', label: 'Select' },
+          { value: 'connect', label: 'Connect' },
+        ]} name='interactionMode' value={mode} onChange={handleSetMode} />
       </div>
       <BoardViewModeSelect />
       <button className='with-icon' onClick={(e) => openDialog(<SettingsDialog />, e)}>
