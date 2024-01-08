@@ -125,6 +125,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
       throw new Error('Cannot sync, no device!')
     }
     await conn.jlctl.setSupplySwitchPos(supplySwitchPos)
+    await conn.jlctl.putNetlist(netlist)
     await syncFromDevice()
   }
 
