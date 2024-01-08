@@ -121,8 +121,19 @@ const ImageBoardView: React.FC = () => {
         return
       }
 
-      if (id === 'tNeg' || id === 'bNeg') {
+      if (['tNeg', 'bNeg', 'ngnd0', 'ngnd1'].includes(id)) {
         handleNodeClick('GND')
+        return
+      }
+
+      if (id === 'n5v') {
+        handleNodeClick('5V')
+        return
+      }
+
+      const nanoMatch = id.match(/^(a|d)(\d+)$/)
+      if (nanoMatch) {
+        handleNodeClick(id.toUpperCase())
         return
       }
     }
@@ -390,7 +401,7 @@ const ImageBoardView: React.FC = () => {
             />
             <rect
               className='nanoPin'
-              id="a8"
+              id="n5v"
               width={84.595268}
               height={256.60565}
               x={1868.7933}
@@ -569,8 +580,6 @@ function useRailswitchTooltip() {
     getFloatingProps,
   }
 }
-
-
 
 export default ImageBoardView
 
