@@ -30,7 +30,7 @@ export const ConnectionPanel: React.FC = () => {
       <div className='content'>
         <button disabled={!ready || syncAuto} onClick={syncToDevice}>Sync to device ⇒</button>
         <label>
-          <input type='checkbox' name='syncToDeviceAuto' checked={syncAuto} onChange={e => setSyncAuto(e.currentTarget.checked)} />
+          <input type='checkbox' name='syncToDeviceAuto' checked={syncAuto} onChange={e => setSyncAuto(e.currentTarget.checked)} disabled={!ready} />
           Sync automatically
         </label>
         <br />

@@ -146,7 +146,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
   }, [syncOnce])
 
   useEffect(() => {
-    if (syncAuto) {
+    if (syncAuto && conn.ready) {
       syncToDevice()
     }
   }, [syncAuto, netlist, supplySwitchPos])
