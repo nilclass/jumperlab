@@ -4,6 +4,10 @@
 
   > svg {
     max-height: 90vh;
+
+    &[data-interaction-mode="connect"] {
+      cursor: cell;
+    }
   }
 
   .SelectionInfo {

@@ -98,7 +98,7 @@ const ROW_PATHS = [
 
 const ImageBoardView: React.FC = () => {
   const { netlist, supplySwitchPos, setSupplySwitchPos } = useContext(JumperlessStateContext)
-  const { handleNodeClick, selectedNode } = useContext(InteractionContext)!
+  const { mode, handleNodeClick, selectedNode } = useContext(InteractionContext)!
   const nodeColors = useMemo(() => netlistNodeColors(netlist), [netlist])
 
   const switchDiff = useMemo(() => {
@@ -170,6 +170,7 @@ const ImageBoardView: React.FC = () => {
         height="auto"
         preserveAspectRatio="xMidYMid"
         onClick={handleClick}
+        data-interaction-mode={mode}
       >
         <g id="g1">
           <g id="nanoHeader">
