@@ -61,3 +61,12 @@ export function netlistGetNodes(netlist: Netlist, index: Number): Array<Jumperle
   return net.nodes
 }
 
+export function netlistNodeColors(netlist: Netlist): Map<JumperlessNode, string> {
+  const colors = new Map()
+  netlist.forEach(net => {
+    net.nodes.forEach(node => {
+      colors.set(node, net.color)
+    })
+  })
+  return colors
+}

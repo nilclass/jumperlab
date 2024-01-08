@@ -19,6 +19,7 @@ import {
 import './ImageBoardView.scss'
 import { InteractionContext } from "./interaction"
 import { SelectionInfo } from "./SelectionInfo"
+import { netlistNodeColors } from "./netlist"
 
 const SWITCH_OPTS: Array<SupplySwitchPos> = [
   '8V',
@@ -96,8 +97,9 @@ const ROW_PATHS = [
 ]
 
 const ImageBoardView: React.FC = () => {
-  const { supplySwitchPos, setSupplySwitchPos } = useContext(JumperlessStateContext)
+  const { netlist, supplySwitchPos, setSupplySwitchPos } = useContext(JumperlessStateContext)
   const { handleNodeClick, selectedNode } = useContext(InteractionContext)!
+  const nodeColors = useMemo(() => netlistNodeColors(netlist), [netlist])
 
   const switchDiff = useMemo(() => {
     return (SWITCH_OPTS.indexOf(supplySwitchPos) - 1) * 55
@@ -142,11 +144,17 @@ const ImageBoardView: React.FC = () => {
 
   const rows = ROW_PATHS.map((path, i) => {
     const row = i + 1
+    const fill = nodeColors.get(row)
+    const style: React.CSSProperties = {}
+    if (fill) {
+      style.fill = fill
+    }
     return (
       <path
         key={row}
-      id={`row${row}`}
+        id={`row${row}`}
         className={`row ${selectedNode === row ? 'selected' : ''}`}
+        style={style}
         d={path}
       />
     )
