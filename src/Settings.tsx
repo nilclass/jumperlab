@@ -74,7 +74,7 @@ function saveSettings(settings: SettingsMap) {
   localStorage.jumperlabSettings = JSON.stringify(settings)
 }
 
-export const SettingsDialog: React.FC= () => {
+export const SettingsDialog: React.FC = () => {
   const ref = useRef<HTMLTextAreaElement>(null)
   const { settings, replace } = useContext(SettingsContext)!
   const formattedSettings = useMemo(() => JSON.stringify(settings, null, 2), [settings])

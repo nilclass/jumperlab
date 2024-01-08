@@ -10,6 +10,8 @@ import { JumperlessNode } from './jlctlapi'
 import { JumperlessStateContext } from './JumperlessState'
 import { useSetting } from './Settings'
 import { netlistGetNodes } from './netlist'
+import { CameraSelectionDialog } from './CameraSelectionDialog'
+import { useOpenDialog } from './dialogs'
 
 type BoardViewProps = {
   selectedNode: JumperlessNode | null
@@ -53,6 +55,8 @@ export const BoardView: React.FC = () => {
   const ref = useRef<HTMLDivElement>(null)
   // size of the view area (detected, changes on window resize)
   const [viewSize, setViewSize] = useState([100, 100])
+  const [currentCam, setCurrentCam] = useSetting<string | null>('currentCameraId', null)
+  const openDialog = useOpenDialog()
 
   // size of the background (e.g. camera feed) in source coordinates (e.g. physical camera pixels)
   const [bgSize, setBgSize] = useState([100, 100])
@@ -181,11 +185,21 @@ export const BoardView: React.FC = () => {
     return <ImageBoardView />
   }
 
+  if (mode === 'camera' && !currentCam) {
+    return (
+      <div className='BoardView'>
+        <strong>No camera selected!</strong>
+        <br />
+        <button onClick={e => openDialog(<CameraSelectionDialog />, e)}>Select a camera</button>
+      </div>
+    )
+  }
+
   return (
     <div className='BoardView' ref={ref} data-adjust={adjust} data-pin-overlay={pinOverlay} data-mode={mode}>
       <div className='viewarea' style={mode === 'blank' ? {} : { width: areaSize[0], height: areaSize[1] }}>
         {mode === 'camera'
-        ? <CameraLayer onSizeChange={setBgSize} />
+        ? <CameraLayer onSizeChange={setBgSize} deviceId={currentCam!} />
         : mode === 'blank'
         ? <BlankLayer onSizeChange={setBgSize} /> : null}
         <div className='boardrect' style={boardRectStyle}>
@@ -237,11 +251,11 @@ const BlankLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> =
 *   return <img src="images/default-board-pic.jpg" onLoad={handleLoad} />
 * } */
 
-const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> = ({ onSizeChange }) => {
+const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void, deviceId: string }> = ({ onSizeChange, deviceId }) => {
   const ref = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false }).then(
+    navigator.mediaDevices.getUserMedia({ video: { deviceId: { exact: deviceId } } }).then(
       stream => {
         const video = ref.current!
         const track = stream.getVideoTracks()[0]
