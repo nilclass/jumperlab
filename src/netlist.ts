@@ -38,7 +38,7 @@ function netlistNewNet(netlist: Netlist, nodes: Array<JumperlessNode>): Netlist 
       nodes,
       name: `Net ${index}`,
       number: index,
-      color: '#000000',
+      color: randomColor(),
       special: false,
       machine: true,
     },
@@ -69,4 +69,13 @@ export function netlistNodeColors(netlist: Netlist): Map<JumperlessNode, string>
     })
   })
   return colors
+}
+
+function randomColor() {
+  const r = Math.floor(Math.random() * 0xFF)
+  const g = Math.floor(Math.random() * 0xFF)
+  const b = Math.floor(Math.random() * 0xFF)
+  const color = '#' + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0')
+  console.log('generated', color)
+  return color
 }
