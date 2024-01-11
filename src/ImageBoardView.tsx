@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useRef, useState } from "react"
 import { JumperlessStateContext } from './JumperlessState'
-import { SupplySwitchPos } from "./jlctlapi"
+import { JumperlessNode, SupplySwitchPos } from "./jlctlapi"
 import {
   useFloating,
   autoUpdate,
@@ -20,6 +20,7 @@ import './ImageBoardView.scss'
 import { InteractionContext } from "./interaction"
 import { SelectionInfo } from "./SelectionInfo"
 import { netlistNodeColors } from "./netlist"
+import { CursorModeIndicator } from "./CursorModeIndicator"
 
 const SWITCH_OPTS: Array<SupplySwitchPos> = [
   '8V',
@@ -33,72 +34,60 @@ const SWITCH_LABELS: { [key in SupplySwitchPos]: string } = {
   '8V': '±8V',
 }
 
-const ROW_PATHS = [
-  "M407.19788 1450.7103H486.940151V2014.0357399999998H407.19788z",
-  "M486.94028 1450.7103H566.682551V2014.0357399999998H486.94028z",
-  "M566.68262 1450.7103H646.424891V2014.0357399999998H566.68262z",
-  "M646.42456 1450.7103H726.166831V2014.0357399999998H646.42456z",
-  "M726.16718 1450.7103H805.909451V2014.0357399999998H726.16718z",
-  "M805.9093 1450.7103H885.651571V2014.0357399999998H805.9093z",
-  "M885.65149 1450.7103H965.3937609999999V2014.0357399999998H885.65149z",
-  "M965.39386 1450.7103H1045.136131V2014.0357399999998H965.39386z",
-  "M1045.1365 1450.7103H1124.8787710000001V2014.0357399999998H1045.1365z",
-  "M1124.8782 1450.7103H1204.6204710000002V2014.0357399999998H1124.8782z",
-  "M1204.6207 1450.7103H1284.362971V2014.0357399999998H1204.6207z",
-  "M1284.3629 1450.7103H1364.1051710000002V2014.0357399999998H1284.3629z",
-  "M1364.105 1450.7103H1443.847271V2014.0357399999998H1364.105z",
-  "M1443.8474 1450.7103H1523.5896710000002V2014.0357399999998H1443.8474z",
-  "M1523.5897 1450.7103H1603.331971V2014.0357399999998H1523.5897z",
-  "M1603.332 1450.7103H1683.0742710000002V2014.0357399999998H1603.332z",
-  "M1683.0741 1450.7103H1762.8163710000001V2014.0357399999998H1683.0741z",
-  "M1762.8163 1450.7103H1842.558571V2014.0357399999998H1762.8163z",
-  "M1842.5588 1450.7103H1922.301071V2014.0357399999998H1842.5588z",
-  "M1922.3011 1450.7103H2002.043371V2014.0357399999998H1922.3011z",
-  "M2002.0427 1450.7103H2081.784971V2014.0357399999998H2002.0427z",
-  "M2081.7854 1450.7103H2161.5276710000003V2014.0357399999998H2081.7854z",
-  "M2161.5281 1450.7103H2241.270371V2014.0357399999998H2161.5281z",
-  "M2241.27 1450.7103H2321.012271V2014.0357399999998H2241.27z",
-  "M2321.0122 1450.7103H2400.754471V2014.0357399999998H2321.0122z",
-  "M2400.7549 1450.7103H2480.497171V2014.0357399999998H2400.7549z",
-  "M2480.4963 1450.7103H2560.238571V2014.0357399999998H2480.4963z",
-  "M2560.2393 1450.7103H2639.9815710000003V2014.0357399999998H2560.2393z",
-  "M2639.9817 1450.7103H2719.723971V2014.0357399999998H2639.9817z",
-  "M2719.7236 1450.7103H2799.465871V2014.0357399999998H2719.7236z",
-  "M407.19788 2153.8367H486.940151V2717.16214H407.19788z",
-  "M486.94028 2153.8367H566.682551V2717.16214H486.94028z",
-  "M566.68256 2153.8367H646.4248309999999V2717.16214H566.68256z",
-  "M646.4245 2153.8367H726.1667709999999V2717.16214H646.4245z",
-  "M726.16711 2153.8367H805.9093809999999V2717.16214H726.16711z",
-  "M805.90924 2153.8367H885.6515109999999V2717.16214H805.90924z",
-  "M885.65143 2153.8367H965.393701V2717.16214H885.65143z",
-  "M965.39386 2153.8367H1045.136131V2717.16214H965.39386z",
-  "M1045.1365 2153.8367H1124.8787710000001V2717.16214H1045.1365z",
-  "M1124.8782 2153.8367H1204.6204710000002V2717.16214H1124.8782z",
-  "M1204.6207 2153.8367H1284.362971V2717.16214H1204.6207z",
-  "M1284.3629 2153.8367H1364.1051710000002V2717.16214H1284.3629z",
-  "M1364.105 2153.8367H1443.847271V2717.16214H1364.105z",
-  "M1443.8473 2153.8367H1523.589571V2717.16214H1443.8473z",
-  "M1523.5896 2153.8367H1603.331871V2717.16214H1523.5896z",
-  "M1603.3319 2153.8367H1683.074171V2717.16214H1603.3319z",
-  "M1683.074 2153.8367H1762.8162710000001V2717.16214H1683.074z",
-  "M1762.8163 2153.8367H1842.558571V2717.16214H1762.8163z",
-  "M1842.5588 2153.8367H1922.301071V2717.16214H1842.5588z",
-  "M1922.3011 2153.8367H2002.043371V2717.16214H1922.3011z",
-  "M2002.0427 2153.8367H2081.784971V2717.16214H2002.0427z",
-  "M2081.7852 2153.8367H2161.527471V2717.16214H2081.7852z",
-  "M2161.5278 2153.8367H2241.270071V2717.16214H2161.5278z",
-  "M2241.27 2153.8367H2321.012271V2717.16214H2241.27z",
-  "M2321.012 2153.8367H2400.7542710000002V2717.16214H2321.012z",
-  "M2400.7549 2153.8367H2480.497171V2717.16214H2400.7549z",
-  "M2480.4961 2153.8367H2560.238371V2717.16214H2480.4961z",
-  "M2560.239 2153.8367H2639.981271V2717.16214H2560.239z",
-  "M2639.9817 2153.8367H2719.723971V2717.16214H2639.9817z",
-  "M2719.7236 2153.8367H2799.465871V2717.16214H2719.7236z"
+const ROW_POSITIONS = [
+  [407.19788, 1450.7103], [486.94028, 1450.7103], [566.68262, 1450.7103], [646.42456, 1450.7103], [726.16718, 1450.7103],
+  [805.9093, 1450.7103], [885.65149, 1450.7103], [965.39386, 1450.7103], [1045.1365, 1450.7103], [1124.8782, 1450.7103],
+  [1204.6207, 1450.7103], [1284.3629, 1450.7103], [1364.105, 1450.7103], [1443.8474, 1450.7103], [1523.5897, 1450.7103],
+  [1603.332, 1450.7103], [1683.0741, 1450.7103], [1762.8163, 1450.7103], [1842.5588, 1450.7103], [1922.3011, 1450.7103],
+  [2002.0427, 1450.7103], [2081.7854, 1450.7103], [2161.5281, 1450.7103], [2241.27, 1450.7103], [2321.0122, 1450.7103],
+  [2400.7549, 1450.7103], [2480.4963, 1450.7103], [2560.2393, 1450.7103], [2639.9817, 1450.7103], [2719.7236, 1450.7103],
+  [407.19788, 2153.8367], [486.94028, 2153.8367], [566.68256, 2153.8367], [646.4245, 2153.8367], [726.16711, 2153.8367],
+  [805.90924, 2153.8367], [885.65143, 2153.8367], [965.39386, 2153.8367], [1045.1365, 2153.8367], [1124.8782, 2153.8367],
+  [1204.6207, 2153.8367], [1284.3629, 2153.8367], [1364.105, 2153.8367], [1443.8473, 2153.8367], [1523.5896, 2153.8367],
+  [1603.3319, 2153.8367], [1683.074, 2153.8367], [1762.8163, 2153.8367], [1842.5588, 2153.8367], [1922.3011, 2153.8367],
+  [2002.0427, 2153.8367], [2081.7852, 2153.8367], [2161.5278, 2153.8367], [2241.27, 2153.8367], [2321.012, 2153.8367],
+  [2400.7549, 2153.8367], [2480.4961, 2153.8367], [2560.239, 2153.8367], [2639.9817, 2153.8367], [2719.7236, 2153.8367]
 ]
+
+const ROW_WIDTH = 79.74227100000007
+const ROW_HEIGHT = 563.3254399999998
+
+const ROW_CENTERS = ROW_POSITIONS.map(([x, y]) => [x + ROW_WIDTH / 2, y])
+
+const ROW_INDEX_OFFSETS = [
+  196,
+  276,
+  356,
+  436,
+  516,
+]
+
+function holePos(row: JumperlessNode & number, index: number): [number, number] {
+  const [x, y] = ROW_CENTERS[row - 1]
+  return [x, y + ROW_INDEX_OFFSETS[index]]
+}
+
+function railNode(rail: string, supplySwitchPos: SupplySwitchPos): JumperlessNode | null {
+  if (rail === 'tNeg' || rail === 'bNeg') {
+    return 'GND'
+  }
+  if (supplySwitchPos === '3.3V') {
+    return '3V3'
+  }
+  if (supplySwitchPos === '5V') {
+    return '5V'
+  }
+  return null
+}
+
+function makePath(points: Array<[number, number]>): string {
+  const [x, y] = points[0]
+  return `M${x} ${y}` + points.slice(1).map(([x, y]) => `L${x} ${y}`).join('')
+}
 
 const ImageBoardView: React.FC = () => {
   const { netlist, supplySwitchPos, setSupplySwitchPos } = useContext(JumperlessStateContext)
-  const { mode, handleNodeClick, selectedNode } = useContext(InteractionContext)!
+  const { mode, handleNodeClick, selectedNode, handleDismiss } = useContext(InteractionContext)!
   const nodeColors = useMemo(() => netlistNodeColors(netlist), [netlist])
 
   const switchDiff = useMemo(() => {
@@ -142,28 +131,92 @@ const ImageBoardView: React.FC = () => {
     handleNodeClick(null)
   }
 
-  const rows = ROW_PATHS.map((path, i) => {
+  const handleContextMenu = (e: React.MouseEvent) => {
+    if (handleDismiss()) {
+      e.preventDefault()
+    }      
+  }
+
+  const rows = ROW_POSITIONS.map(([x, y], i) => {
     const row = i + 1
     const fill = nodeColors.get(row)
     const style: React.CSSProperties = {}
     if (fill) {
       style.fill = fill
     }
+
     return (
-      <path
+      <rect
         key={row}
+        x={x}
+        y={y}
         id={`row${row}`}
         className={`row ${selectedNode === row ? 'selected' : ''}`}
+        width={ROW_WIDTH}
+        height={ROW_HEIGHT}
         style={style}
-        d={path}
       />
     )
   })
 
+  const RAIL_POS = {
+    tPos: [347.19583, 1278.9934],
+    tNeg: [347.19583, 1364.8767],
+    bPos: [349.44824, 2717.2117],
+    bNeg: [349.44824, 2803.095]
+  }
+
+  const rails = useMemo(() => {
+    return Object.entries(RAIL_POS).map(([id, [x, y]]) => {
+      const node = railNode(id, supplySwitchPos)
+      const color = node && nodeColors.get(node)
+      const style: React.CSSProperties = {}
+      if (color) {
+        style.fill = color
+      }
+      return (
+        <rect className='rail' key={id} id={id} width={2514.6069} height={85.783966} x={x} y={y} ry={0.31750244} style={style} />
+      )
+    })
+  }, [nodeColors, supplySwitchPos])
+/* 
+*   const a = ROW_CENTERS[8] // row 9
+*   const b = ROW_CENTERS[10] // row 11 */
+
+  const style = {
+    stroke: nodeColors.get(9),
+    strokeWidth: 8,
+    fill: 'none',
+  }
+
+  const aPos = holePos(9, 2)
+  const bPos = holePos(11, 2)
+
+  //const d = `M${a[0]} ${a[1] + ROW_INDEX_OFFSETS[0]}L${b[0]} ${b[1] + ROW_INDEX_OFFSETS[0]}`
+  /* const d = ROW_INDEX_OFFSETS.map(o => `M${a[0]} ${a[1] + o}L${b[0]} ${b[1] + o}`).join(' ') */
+
+  //const d = `M${aPos[0]} ${aPos[1]}L${bPos[0]} ${bPos[1]}`
+  const d = makePath([
+    aPos,
+    [
+      aPos[0] + (ROW_WIDTH / 2),
+      aPos[1] + (ROW_WIDTH / 2),
+    ],
+    [
+      bPos[0] - (ROW_WIDTH / 2),
+      bPos[1] + (ROW_WIDTH / 2),
+    ],
+    bPos,
+  ])
+
+  const connections = [
+    <path style={style} d={d} />
+  ]
 
   return (
     <div className="ImageBoardView">
       <SelectionInfo />
+      <CursorModeIndicator mode={mode} />
       <svg
         viewBox="0 0 3200 3200"
         width="100%"
@@ -171,6 +224,7 @@ const ImageBoardView: React.FC = () => {
         preserveAspectRatio="xMidYMid"
         onClick={handleClick}
         data-interaction-mode={mode}
+        onContextMenu={handleContextMenu}
       >
         <g id="g1">
           <g id="nanoHeader">
@@ -445,44 +499,7 @@ const ImageBoardView: React.FC = () => {
               ry={0.37795833}
             />
           </g>
-          <g id="rails">
-            <rect
-              className='rail'
-              id="tPos"
-              width={2514.6069}
-              height={85.783966}
-              x={347.19583}
-              y={1278.9934}
-              ry={0.31750244}
-            />
-            <rect
-              className='rail'
-              id="tNeg"
-              width={2514.6069}
-              height={85.783966}
-              x={347.19583}
-              y={1364.8767}
-              ry={0.31750244}
-            />
-            <rect
-              className='rail'
-              id="bPos"
-              width={2514.6069}
-              height={85.783966}
-              x={349.44824}
-              y={2717.2117}
-              ry={0.31750244}
-            />
-            <rect
-              className='rail'
-              id="bNeg"
-              width={2514.6069}
-              height={85.783966}
-              x={349.44824}
-              y={2803.095}
-              ry={0.31750244}
-            />
-          </g>
+          <g id="rails">{rails}</g>
           <g id="Rows">{rows}</g>
           <rect
             style={{
@@ -533,6 +550,7 @@ const ImageBoardView: React.FC = () => {
             x={0}
             y={-0.00001924485}
           />
+          <g>{connections}</g>
         </g>
       </svg>
       <FloatingPortal>

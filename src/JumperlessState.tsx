@@ -2,6 +2,7 @@ import React, { useState, createContext, useCallback, useContext, useEffect } fr
 import { ConnectionContext } from './connection'
 import { JumperlessNode, Netlist, NetlistEntry, SupplySwitchPos } from './jlctlapi'
 import { netlistAddBridge } from './netlist'
+import { isEqual } from 'lodash'
 
 type JumperlessStateContextType = {
   supplySwitchPos: SupplySwitchPos
@@ -120,12 +121,16 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
   const [syncOnce, setSyncOnce] = useState(false)
   const [syncAuto, setSyncAuto] = useState(false)
 
-  async function syncToDevice() {
+  async function syncToDevice(auto?: boolean) {
     if (conn.jlctl === null) {
       throw new Error('Cannot sync, no device!')
     }
-    await conn.jlctl.setSupplySwitchPos(supplySwitchPos)
-    await conn.jlctl.putNetlist(netlist)
+    if (!auto || (conn.supplySwitchPos !== supplySwitchPos)) {
+      await conn.jlctl.setSupplySwitchPos(supplySwitchPos)
+    }
+    if (!auto || !isEqual(conn.netlist, netlist)) {
+      await conn.jlctl.putNetlist(netlist)
+    }
     await syncFromDevice()
   }
 
@@ -147,7 +152,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
 
   useEffect(() => {
     if (syncAuto && conn.ready) {
-      syncToDevice()
+      syncToDevice(true)
     }
   }, [syncAuto, netlist, supplySwitchPos])
 

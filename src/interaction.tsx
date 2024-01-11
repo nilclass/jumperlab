@@ -14,6 +14,8 @@ type InteractionContextType = {
   handleNodeClick: (node: JumperlessNode | null) => void
   handleSetMode: (mode: Mode) => void
 
+  handleDismiss: () => boolean
+
   highlightedNode: JumperlessNode | null
   setHighlightedNode: (node: JumperlessNode | null) => void
 
@@ -24,7 +26,7 @@ type InteractionContextType = {
 export const InteractionContext = React.createContext<InteractionContextType | null>(null)
 
 type Keymap = {
-  [key: string]: () => void
+  [key: string]: () => string | null
 }
 
 export const InteractionController: React.FC<InteractionControllerProps> = ({ children }) => {
@@ -34,14 +36,17 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
   const [mode, setMode] = useState<Mode>('select')
   const { addBridge } = useContext(JumperlessStateContext)
 
+  function keySetMode(mode: Mode): string {
+    setMode(mode)
+    return `Mode: ${mode}`
+  }
+
   const keymap = useMemo<Keymap>(() => {
-    if (selectedNode) {
-      return {
-        c: () => setMode('connect'),
-      }
+    return {
+      s: () => keySetMode('select'),
+      c: () => keySetMode('connect'),
     }
-    return {} as Keymap
-  }, [selectedNode, mode])
+  }, [])
 
   function handleNodeClick(node: JumperlessNode | null) {
     if (mode === 'select') {
@@ -60,6 +65,17 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
 
   function handleSetMode(mode: Mode) {
     setMode(mode)
+  }
+
+  function handleDismiss(): boolean {
+    if (mode === 'connect') {
+      setMode('select')
+      return true
+    } else if (selectedNode) {
+      setSelectedNode(null)
+      return true
+    }
+    return false
   }
 
   useEffect(() => {
@@ -90,6 +106,7 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
       setHighlightedNode,
       highlightedNet,
       setHighlightedNet,
+      handleDismiss,
     }}>
       {children}
     </InteractionContext.Provider>

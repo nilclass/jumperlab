@@ -29,6 +29,14 @@
           flex-grow: 1;
           font-weight: bold;
         }
+
+        > .color {
+          > input {
+            border: none;
+            width: 16px;
+            height: 16px;
+          }
+        }
       }
     }
   }
