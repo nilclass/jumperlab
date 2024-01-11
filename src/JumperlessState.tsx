@@ -146,7 +146,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
 
   useEffect(() => {
     if (syncOnce) {
-      //setNetlist(conn.netlist)
+      setNetlist(conn.netlist!)
       setSupplySwitchPos(conn.supplySwitchPos)
       setSyncOnce(false)
     }
