@@ -52,7 +52,7 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
     if (mode === 'select') {
       setSelectedNode(node)
     } else if (mode === 'connect') {
-      if (node) {
+      if (node && node !== selectedNode) {
         if (selectedNode) {
           addBridge(selectedNode, node)
           setSelectedNode(null)

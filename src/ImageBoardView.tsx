@@ -21,6 +21,7 @@ import { InteractionContext } from "./interaction"
 import { SelectionInfo } from "./SelectionInfo"
 import { netlistNodeColors } from "./netlist"
 import { CursorModeIndicator } from "./CursorModeIndicator"
+import { computeLayout } from "./ImageBoardView/connections"
 
 const SWITCH_OPTS: Array<SupplySwitchPos> = [
   '8V',
@@ -134,7 +135,7 @@ const ImageBoardView: React.FC = () => {
   const handleContextMenu = (e: React.MouseEvent) => {
     if (handleDismiss()) {
       e.preventDefault()
-    }      
+    }
   }
 
   const rows = ROW_POSITIONS.map(([x, y], i) => {
@@ -179,39 +180,34 @@ const ImageBoardView: React.FC = () => {
       )
     })
   }, [nodeColors, supplySwitchPos])
-/* 
-*   const a = ROW_CENTERS[8] // row 9
-*   const b = ROW_CENTERS[10] // row 11 */
 
-  const style = {
-    stroke: nodeColors.get(9),
-    strokeWidth: 8,
-    fill: 'none',
-  }
-
-  const aPos = holePos(9, 2)
-  const bPos = holePos(11, 2)
-
-  //const d = `M${a[0]} ${a[1] + ROW_INDEX_OFFSETS[0]}L${b[0]} ${b[1] + ROW_INDEX_OFFSETS[0]}`
-  /* const d = ROW_INDEX_OFFSETS.map(o => `M${a[0]} ${a[1] + o}L${b[0]} ${b[1] + o}`).join(' ') */
-
-  //const d = `M${aPos[0]} ${aPos[1]}L${bPos[0]} ${bPos[1]}`
-  const d = makePath([
-    aPos,
-    [
-      aPos[0] + (ROW_WIDTH / 2),
-      aPos[1] + (ROW_WIDTH / 2),
-    ],
-    [
-      bPos[0] - (ROW_WIDTH / 2),
-      bPos[1] + (ROW_WIDTH / 2),
-    ],
-    bPos,
-  ])
-
-  const connections = [
-    <path style={style} d={d} />
-  ]
+  const connections = computeLayout(netlist).map(({ a, b }) => {
+    const aPos = holePos(a.node, a.index)
+    const bPos = holePos(b.node, b.index)
+    const d = makePath(
+      Math.abs(a.node - b.node) == 1
+      ? [aPos, bPos] // direct neighbors get a straight connection
+      : [ // all others are connected with midpoints
+        aPos,
+        [
+          aPos[0] + (ROW_WIDTH / 2),
+          aPos[1] + (ROW_WIDTH / 2),
+        ],
+        [
+          bPos[0] - (ROW_WIDTH / 2),
+          bPos[1] + (ROW_WIDTH / 2),
+        ],
+        bPos,
+      ]
+    )
+    const style = {
+      stroke: nodeColors.get(a.node),
+      strokeWidth: 8,
+      fill: 'none',
+    }
+    const id = `${a.node}-${b.node}`
+    return <path key={id} id={id} style={style} d={d} />
+  })
 
   return (
     <div className="ImageBoardView">
@@ -609,4 +605,3 @@ function useRailswitchTooltip() {
 }
 
 export default ImageBoardView
-
