@@ -1,15 +1,11 @@
 import React, { useEffect, useRef } from 'react'
 import { computePosition, flip, offset, shift } from '@floating-ui/react'
-import { Mode } from './interaction'
 import './CursorModeIndicator.scss'
 
-export const CursorModeIndicator: React.FC<{ mode: Mode }> = ({ mode }) => {
+export const CursorModeIndicator: React.FC<{ hint: string }> = ({ hint }) => {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    if (mode === 'select') {
-      return
-    }
     function handleMouseMove({ clientX, clientY }: MouseEvent) {
       const virtualEl = {
         getBoundingClientRect() {
@@ -43,15 +39,9 @@ export const CursorModeIndicator: React.FC<{ mode: Mode }> = ({ mode }) => {
 
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [mode])
-
-  if (mode === 'select') {
-    return null
-  }
+  }, [hint])
 
   return (
-    <div className='CursorModeIndicator' ref={ref}>
-      {mode}
-    </div>
+    <div className='CursorModeIndicator' ref={ref}>{hint}</div>
   )
 }

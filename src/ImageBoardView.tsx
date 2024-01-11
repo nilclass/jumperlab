@@ -88,7 +88,7 @@ function makePath(points: Array<[number, number]>): string {
 
 const ImageBoardView: React.FC = () => {
   const { netlist, supplySwitchPos, setSupplySwitchPos } = useContext(JumperlessStateContext)
-  const { mode, handleNodeClick, selectedNode, handleDismiss } = useContext(InteractionContext)!
+  const { mode, handleNodeClick, selectedNode, handleDismiss, cursorHint } = useContext(InteractionContext)!
   const nodeColors = useMemo(() => netlistNodeColors(netlist), [netlist])
 
   const switchDiff = useMemo(() => {
@@ -212,7 +212,7 @@ const ImageBoardView: React.FC = () => {
   return (
     <div className="ImageBoardView">
       <SelectionInfo />
-      <CursorModeIndicator mode={mode} />
+      {cursorHint !== null && <CursorModeIndicator hint={cursorHint} />}
       <svg
         viewBox="0 0 3200 3200"
         width="100%"

@@ -21,6 +21,8 @@ type InteractionContextType = {
 
   highlightedNet: number | null
   setHighlightedNet: (index: number | null) => void
+
+  cursorHint: string | null
 }
 
 export const InteractionContext = React.createContext<InteractionContextType | null>(null)
@@ -35,6 +37,7 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
   const [highlightedNet, setHighlightedNet] = useState<number | null>(null)
   const [mode, setMode] = useState<Mode>('select')
   const { addBridge } = useContext(JumperlessStateContext)
+  const [cursorHint, setCursorHint] = useState(computeHint(mode, selectedNode))
 
   function keySetMode(mode: Mode): string {
     setMode(mode)
@@ -96,6 +99,10 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
     }
   }, [keymap])
 
+  useEffect(() => {
+    setCursorHint(computeHint(mode, selectedNode))
+  }, [mode, selectedNode])
+
   return (
     <InteractionContext.Provider value={{
       selectedNode,
@@ -107,6 +114,7 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
       highlightedNet,
       setHighlightedNet,
       handleDismiss,
+      cursorHint,
     }}>
       {children}
     </InteractionContext.Provider>
@@ -118,4 +126,16 @@ function eventTargetsInput(e: KeyboardEvent): boolean {
     return ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)
   }
   return false
+}
+
+
+function computeHint(mode: Mode, selectedNode: JumperlessNode | null): string | null {
+  if (mode === 'connect') {
+    if (selectedNode !== null) {
+      return `connect with ${selectedNode}`
+    } else {
+      return `connect: choose a node`
+    }
+  }
+  return null
 }
