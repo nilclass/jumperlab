@@ -18,8 +18,9 @@ export const Toolbar: React.FC = () => {
       </div>
       <div>
         <RadioGroup options={[
-          { value: 'select', label: 'Select' },
-          { value: 'connect', label: 'Connect' },
+          { value: 'select', label: 'Select [s]' },
+          { value: 'connect', label: 'Connect [c]' },
+          { value: 'disconnect', label: 'Disconnect [d]' },
         ]} name='interactionMode' value={mode} onChange={handleSetMode} />
       </div>
       <BoardViewModeSelect />

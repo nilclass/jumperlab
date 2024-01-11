@@ -79,3 +79,22 @@ function randomColor() {
   console.log('generated', color)
   return color
 }
+
+export function netlistDisconnectNode(netlist: Netlist, node: JumperlessNode): Netlist {
+  if (typeof node === 'string') {
+    // TODO: notify that special nodes cannot be removed!
+    return netlist
+  }
+  const newList: Netlist = []
+  netlist.forEach(net => {
+    if (net.nodes.includes(node)) {
+      const filtered = net.nodes.filter(n => n !== node)
+      if (filtered.length > 1 || net.index < 8) {
+        newList.push({ ...net, nodes: filtered })
+      }
+    } else {
+      newList.push(net)
+    }
+  })
+  return newList
+}

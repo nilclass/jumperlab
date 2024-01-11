@@ -2,7 +2,7 @@ import React, { useEffect, useState, useContext, useMemo } from 'react'
 import { JumperlessStateContext } from './JumperlessState';
 import { JumperlessNode } from './jlctlapi';
 
-export type Mode = 'select' | 'connect'
+export type Mode = 'select' | 'connect' | 'disconnect'
 
 type InteractionControllerProps = {
   children: React.ReactNode
@@ -36,7 +36,7 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
   const [highlightedNode, setHighlightedNode] = useState<JumperlessNode | null>(null)
   const [highlightedNet, setHighlightedNet] = useState<number | null>(null)
   const [mode, setMode] = useState<Mode>('select')
-  const { addBridge } = useContext(JumperlessStateContext)
+  const { addBridge, disconnectNode } = useContext(JumperlessStateContext)
   const [cursorHint, setCursorHint] = useState(computeHint(mode, selectedNode))
 
   function keySetMode(mode: Mode): string {
@@ -48,20 +48,38 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
     return {
       s: () => keySetMode('select'),
       c: () => keySetMode('connect'),
+      d: selectedNode ? () => {
+        disconnectNode(selectedNode)
+        setSelectedNode(null)
+        return '...'
+      } : () => keySetMode('disconnect')
     }
-  }, [])
+  }, [selectedNode])
 
   function handleNodeClick(node: JumperlessNode | null) {
-    if (mode === 'select') {
-      setSelectedNode(node)
-    } else if (mode === 'connect') {
-      if (node && node !== selectedNode) {
-        if (selectedNode) {
-          addBridge(selectedNode, node)
-          setSelectedNode(null)
-        } else {
-          setSelectedNode(node)
+    switch (mode) {
+      case 'select': {
+        setSelectedNode(node)
+        break
+      }
+
+      case 'connect': {
+        if (node && node !== selectedNode) {
+          if (selectedNode) {
+            addBridge(selectedNode, node)
+            setSelectedNode(null)
+          } else {
+            setSelectedNode(node)
+          }
         }
+        break
+      }
+
+      case 'disconnect': {
+        if (node) {
+          disconnectNode(node)
+        }
+        break
       }
     }
   }
@@ -71,7 +89,7 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
   }
 
   function handleDismiss(): boolean {
-    if (mode === 'connect') {
+    if (mode === 'connect' || mode === 'disconnect') {
       setMode('select')
       return true
     } else if (selectedNode) {
@@ -136,6 +154,9 @@ function computeHint(mode: Mode, selectedNode: JumperlessNode | null): string | 
     } else {
       return `connect: choose a node`
     }
+  }
+  if (mode === 'disconnect') {
+    return 'disconnect'
   }
   return null
 }

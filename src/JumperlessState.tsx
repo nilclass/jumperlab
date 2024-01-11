@@ -1,7 +1,7 @@
 import React, { useState, createContext, useCallback, useContext, useEffect } from 'react'
 import { ConnectionContext } from './connection'
 import { JumperlessNode, Netlist, NetlistEntry, SupplySwitchPos } from './jlctlapi'
-import { netlistAddBridge } from './netlist'
+import { netlistAddBridge, netlistDisconnectNode } from './netlist'
 import { isEqual } from 'lodash'
 
 type JumperlessStateContextType = {
@@ -16,6 +16,7 @@ type JumperlessStateContextType = {
   syncAuto: boolean
   setSyncAuto: (value: boolean) => void
   addBridge: (a: JumperlessNode, b: JumperlessNode) => void
+  disconnectNode: (node: JumperlessNode) => void
 }
 
 type UpdateFn = (net: NetlistEntry) => NetlistEntry
@@ -32,6 +33,7 @@ const emptyState: JumperlessStateContextType = {
   syncAuto: false,
   setSyncAuto: () => {},
   addBridge() {},
+  disconnectNode() {},
 }
 
 export const JumperlessStateContext = createContext<JumperlessStateContextType>(emptyState)
@@ -177,6 +179,10 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
   const addBridge = useCallback((a: JumperlessNode, b: JumperlessNode) => {
     setNetlist(netlist => netlistAddBridge(netlist, [a, b]))
   }, [setNetlist])
+
+  const disconnectNode = useCallback((node: JumperlessNode) => {
+    setNetlist(netlist => netlistDisconnectNode(netlist, node))
+  }, [setNetlist])
   
   return (
     <JumperlessStateContext.Provider value={{
@@ -191,6 +197,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
       syncAuto,
       setSyncAuto,
       addBridge,
+      disconnectNode
     }}>
       {children}
     </JumperlessStateContext.Provider>
