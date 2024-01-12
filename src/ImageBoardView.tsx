@@ -186,66 +186,68 @@ const ImageBoardView: React.FC = () => {
     })
   }, [nodeColors, supplySwitchPos])
 
-  const connections = computeLayout(netlist).map(({ a, b }) => {
-    let d: string
+  const connections = useMemo(() => {
+    return computeLayout(netlist).map(({ a, b }) => {
+      let d: string
 
-    if (a.node <= 30 && b.node <= 30) { // both in top half
-      const aPos = holePosTop(a.node, a.index)
-      const bPos = holePosTop(b.node, b.index)
-      d = makePath(
-        Math.abs(a.node - b.node) == 1
-        ? [aPos, bPos] // direct neighbors get a straight connection
-        : [ // all others are connected with midpoints
-            aPos,
-            [
-              aPos[0] + (ROW_WIDTH / 2),
-              aPos[1] + (ROW_WIDTH / 2),
-            ],
-            [
-              bPos[0] - (ROW_WIDTH / 2),
-              bPos[1] + (ROW_WIDTH / 2),
-            ],
-            bPos,
-        ]
-      )
-    } else if (a.node > 30 && b.node > 30) { // both in bottom half
-      const aPos = holePosBottom(a.node, a.index)
-      const bPos = holePosBottom(b.node, b.index)
-      d = makePath(
-        Math.abs(a.node - b.node) == 1
-        ? [aPos, bPos] // direct neighbors get a straight connection
-        : [ // all others are connected with midpoints
-            aPos,
-            [
-              aPos[0] + (ROW_WIDTH / 2),
-              aPos[1] - (ROW_WIDTH / 2),
-            ],
-            [
-              bPos[0] - (ROW_WIDTH / 2),
-              bPos[1] - (ROW_WIDTH / 2),
-            ],
-            bPos,
-        ]
-      )
-    } else {
-      const aPos = holePosTop(a.node, a.index)
-      const bPos = holePosBottom(b.node, b.index)
-      d = makePath([
-        aPos,
-        [aPos[0], aPos[1] + (ROW_WIDTH / 2)],
-        [bPos[0], bPos[1] - (ROW_WIDTH / 2)],
-        bPos,
-      ])
-    }
+      if (a.node <= 30 && b.node <= 30) { // both in top half
+        const aPos = holePosTop(a.node, a.index)
+        const bPos = holePosTop(b.node, b.index)
+        d = makePath(
+          Math.abs(a.node - b.node) == 1
+          ? [aPos, bPos] // direct neighbors get a straight connection
+          : [ // all others are connected with midpoints
+              aPos,
+              [
+                aPos[0] + (ROW_WIDTH / 2),
+                aPos[1] + (ROW_WIDTH / 2),
+              ],
+              [
+                bPos[0] - (ROW_WIDTH / 2),
+                bPos[1] + (ROW_WIDTH / 2),
+              ],
+              bPos,
+          ]
+        )
+      } else if (a.node > 30 && b.node > 30) { // both in bottom half
+        const aPos = holePosBottom(a.node, a.index)
+        const bPos = holePosBottom(b.node, b.index)
+        d = makePath(
+          Math.abs(a.node - b.node) == 1
+          ? [aPos, bPos] // direct neighbors get a straight connection
+          : [ // all others are connected with midpoints
+              aPos,
+              [
+                aPos[0] + (ROW_WIDTH / 2),
+                aPos[1] - (ROW_WIDTH / 2),
+              ],
+              [
+                bPos[0] - (ROW_WIDTH / 2),
+                bPos[1] - (ROW_WIDTH / 2),
+              ],
+              bPos,
+          ]
+        )
+      } else {
+        const aPos = holePosTop(a.node, a.index)
+        const bPos = holePosBottom(b.node, b.index)
+        d = makePath([
+          aPos,
+          [aPos[0], aPos[1] + (ROW_WIDTH / 2)],
+          [bPos[0], bPos[1] - (ROW_WIDTH / 2)],
+          bPos,
+        ])
+      }
 
-    const style = {
-      stroke: nodeColors.get(a.node),
-      strokeWidth: 8,
-      fill: 'none',
-    }
-    const id = `${a.node}-${b.node}`
-    return <path className='connection' key={id} id={id} style={style} d={d} />
-  })
+      const style = {
+        stroke: nodeColors.get(a.node),
+        strokeWidth: 8,
+        fill: 'none',
+      }
+      const id = `${a.node}-${b.node}`
+      return <path className='connection' key={id} id={id} style={style} d={d} />
+    })
+  }, [netlist, nodeColors])
 
   return (
     <div className="ImageBoardView">
