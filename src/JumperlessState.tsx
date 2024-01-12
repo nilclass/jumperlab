@@ -177,7 +177,15 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
   }, [setNetlist])
 
   const addBridge = useCallback((a: JumperlessNode, b: JumperlessNode) => {
-    setNetlist(netlist => netlistAddBridge(netlist, [a, b]))
+    setNetlist(netlist => {
+      const result = netlistAddBridge(netlist, [a, b])
+      if (result.value) {
+        return result.value
+      } else {
+        alert(result.error)
+        return netlist
+      }
+    })
   }, [setNetlist])
 
   const disconnectNode = useCallback((node: JumperlessNode) => {

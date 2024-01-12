@@ -1,31 +1,41 @@
 import { uniq } from 'lodash'
 import { Netlist, NetlistEntry, Bridge, JumperlessNode } from './jlctlapi'
 
-export function netlistAddBridge(netlist: Netlist, bridge: Bridge): Netlist {
+type Result<T, E = string> = { value: T, error: never } | { value: never, error: E }
+
+function Ok<T, E>(value: T): Result<T, E> {
+  return { value } as Result<T, E>
+}
+
+function Err<T, E>(error: E): Result<T, E> {
+  return { error } as Result<T, E>
+}
+
+export function netlistAddBridge(netlist: Netlist, bridge: Bridge): Result<Netlist> {
   const netA = netlist.find(net => net.nodes.includes(bridge[0]))
   const netB = netlist.find(net => net.nodes.includes(bridge[1]))
   if (netA && netB && netA !== netB) {
     return netlistMergeNets(netlist, netA, netB)
   } else if (netA) {
-    return netlistAddNode(netlist, netA, bridge[1])
+    return Ok(netlistAddNode(netlist, netA, bridge[1]))
   } else if (netB) {
-    return netlistAddNode(netlist, netB, bridge[0])
+    return Ok(netlistAddNode(netlist, netB, bridge[0]))
   } else {
-    return netlistNewNet(netlist, bridge)
+    return Ok(netlistNewNet(netlist, bridge))
   }
 }
 
-function netlistMergeNets(netlist: Netlist, a: NetlistEntry, b: NetlistEntry): Netlist {
+function netlistMergeNets(netlist: Netlist, a: NetlistEntry, b: NetlistEntry): Result<Netlist> {
   if (a.special && b.special) {
-    throw new Error('Cannot merge special nets')
+    return Err('Cannot merge special nets')
   }
   if (b.special) {
-    return removeNet(updateNet(netlist, b.index, n => ({ ...n, nodes: uniq([...n.nodes, ...a.nodes]) })), a.index)
+    return Ok(removeNet(updateNet(netlist, b.index, n => ({ ...n, nodes: uniq([...n.nodes, ...a.nodes]) })), a.index))
   }
-  return removeNet(updateNet(netlist, a.index, n => ({ ...n, nodes: uniq([...n.nodes, ...b.nodes]) })), b.index)
+  return Ok(removeNet(updateNet(netlist, a.index, n => ({ ...n, nodes: uniq([...n.nodes, ...b.nodes]) })), b.index))
 }
 
-function netlistAddNode(netlist: Netlist, net: NetlistEntry, node: JumperlessNode): Netlist {
+function netlistAddNode(netlist: Netlist, net: NetlistEntry, node: JumperlessNode) {
   return updateNet(netlist, net.index, n => ({ ...n, nodes: uniq([...n.nodes, node]) }))
 }
 
