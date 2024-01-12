@@ -63,9 +63,14 @@ const ROW_INDEX_OFFSETS = [
   516,
 ]
 
-function holePos(row: JumperlessNode & number, index: number): [number, number] {
+function holePosTop(row: JumperlessNode & number, index: number): [number, number] {
   const [x, y] = ROW_CENTERS[row - 1]
   return [x, y + ROW_INDEX_OFFSETS[index]]
+}
+
+function holePosBottom(row: JumperlessNode & number, index: number): [number, number] {
+  const [x, y] = ROW_CENTERS[row - 1]
+  return [x, y + ROW_HEIGHT - ROW_INDEX_OFFSETS[index]]
 }
 
 function railNode(rail: string, supplySwitchPos: SupplySwitchPos): JumperlessNode | null {
@@ -182,24 +187,57 @@ const ImageBoardView: React.FC = () => {
   }, [nodeColors, supplySwitchPos])
 
   const connections = computeLayout(netlist).map(({ a, b }) => {
-    const aPos = holePos(a.node, a.index)
-    const bPos = holePos(b.node, b.index)
-    const d = makePath(
-      Math.abs(a.node - b.node) == 1
-      ? [aPos, bPos] // direct neighbors get a straight connection
-      : [ // all others are connected with midpoints
+    let d: string
+
+    if (a.node <= 30 && b.node <= 30) { // both in top half
+      const aPos = holePosTop(a.node, a.index)
+      const bPos = holePosTop(b.node, b.index)
+      d = makePath(
+        Math.abs(a.node - b.node) == 1
+        ? [aPos, bPos] // direct neighbors get a straight connection
+        : [ // all others are connected with midpoints
+            aPos,
+            [
+              aPos[0] + (ROW_WIDTH / 2),
+              aPos[1] + (ROW_WIDTH / 2),
+            ],
+            [
+              bPos[0] - (ROW_WIDTH / 2),
+              bPos[1] + (ROW_WIDTH / 2),
+            ],
+            bPos,
+        ]
+      )
+    } else if (a.node > 30 && b.node > 30) { // both in bottom half
+      const aPos = holePosBottom(a.node, a.index)
+      const bPos = holePosBottom(b.node, b.index)
+      d = makePath(
+        Math.abs(a.node - b.node) == 1
+        ? [aPos, bPos] // direct neighbors get a straight connection
+        : [ // all others are connected with midpoints
+            aPos,
+            [
+              aPos[0] + (ROW_WIDTH / 2),
+              aPos[1] - (ROW_WIDTH / 2),
+            ],
+            [
+              bPos[0] - (ROW_WIDTH / 2),
+              bPos[1] - (ROW_WIDTH / 2),
+            ],
+            bPos,
+        ]
+      )
+    } else {
+      const aPos = holePosTop(a.node, a.index)
+      const bPos = holePosBottom(b.node, b.index)
+      d = makePath([
         aPos,
-        [
-          aPos[0] + (ROW_WIDTH / 2),
-          aPos[1] + (ROW_WIDTH / 2),
-        ],
-        [
-          bPos[0] - (ROW_WIDTH / 2),
-          bPos[1] + (ROW_WIDTH / 2),
-        ],
+        [aPos[0], aPos[1] + (ROW_WIDTH / 2)],
+        [bPos[0], bPos[1] - (ROW_WIDTH / 2)],
         bPos,
-      ]
-    )
+      ])
+    }
+
     const style = {
       stroke: nodeColors.get(a.node),
       strokeWidth: 8,

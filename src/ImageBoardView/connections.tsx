@@ -31,44 +31,69 @@ const findFreeIndex = (range: RowRange, occupiedRanges: OccupiedRanges): number 
 }
 
 export function computeLayout(netlist: Netlist): Array<Connection> {
-  const connections = []
-  const occupiedRanges: OccupiedRanges = [
-    [],
-    [],
-    [],
-    [],
-    [],
-  ]
+  const connections: Array<Connection> = []
+  const occupiedRangesTop: OccupiedRanges = [[], [], [], [], []]
+  const occupiedRangesBottom: OccupiedRanges = [[], [], [], [], []]
 
   for (const net of netlist) {
-    const rows = []
+    const rowsTop = []
+    const rowsBottom = []
     for (const node of net.nodes) {
       if (typeof node === 'number') {
-        rows.push(node)
+        if (node <= 30) {
+          rowsTop.push(node)
+        } else {
+          rowsBottom.push(node)
+        }
       }
     }
 
-    if (rows.length > 1) {
-      rows.sort((a, b) => a > b ? 1 : a < b ? -1 : 0)
-      for (let i = 1; i < rows.length; i++) {
-        const range: RowRange = [rows[i - 1], rows[i]]
-        const index = findFreeIndex(range, occupiedRanges)
-        if (Math.abs(range[0] - range[1]) > 1) {
-          occupiedRanges[index].push(range)
-        }
-        connections.push({
-          a: {
-            node: rows[i - 1],
-            index,
-          },
-          b: {
-            node: rows[i],
-            index,
-          }
-        })
-      }
+    computeHalfNet(connections, rowsTop, occupiedRangesTop)
+    computeHalfNet(connections, rowsBottom, occupiedRangesBottom)
+
+    if (rowsTop.length > 0 && rowsBottom.length > 0) {
+      const topNode = rowsTop[0]
+      rowsBottom.sort((a, b) => {
+        const da = Math.abs(topNode - (a - 30))
+        const db = Math.abs(topNode - (b - 30))
+        return da > db ? 1 : db > da ? -1 : 0
+      })
+
+      connections.push({
+        a: {
+          node: topNode,
+          index: 4,
+        },
+        b: {
+          node: rowsBottom[0],
+          index: 4,
+        },
+      })
     }
   }
 
   return connections
+}
+
+function computeHalfNet(connections: Array<Connection>, rows: Array<Row>, occupiedRanges: OccupiedRanges) {
+  if (rows.length > 1) {
+    rows.sort((a, b) => a > b ? 1 : a < b ? -1 : 0)
+    for (let i = 1; i < rows.length; i++) {
+      const range: RowRange = [rows[i - 1], rows[i]]
+      const index = findFreeIndex(range, occupiedRanges)
+      if (Math.abs(range[0] - range[1]) > 1) {
+        occupiedRanges[index].push(range)
+      }
+      connections.push({
+        a: {
+          node: rows[i - 1],
+          index,
+        },
+        b: {
+          node: rows[i],
+          index,
+        }
+      })
+    }
+  }
 }
