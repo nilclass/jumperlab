@@ -206,7 +206,7 @@ const ImageBoardView: React.FC = () => {
       fill: 'none',
     }
     const id = `${a.node}-${b.node}`
-    return <path key={id} id={id} style={style} d={d} />
+    return <path className='connection' key={id} id={id} style={style} d={d} />
   })
 
   return (
@@ -546,7 +546,7 @@ const ImageBoardView: React.FC = () => {
             x={0}
             y={-0.00001924485}
           />
-          <g>{connections}</g>
+          <g className="connections">{connections}</g>
         </g>
       </svg>
       <FloatingPortal>

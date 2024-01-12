@@ -106,6 +106,10 @@
       stroke: #fb8f8f;
     }
   }
+
+  .connection {
+    pointer-events: none;
+  }
 }
 
 .railSwitchTooltip {
