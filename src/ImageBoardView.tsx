@@ -86,6 +86,189 @@ function railNode(rail: string, supplySwitchPos: SupplySwitchPos): JumperlessNod
   return null
 }
 
+const NANO_NODES = {
+  "D12": {
+    width: 81.971809,
+    height: 256.60733,
+    x: 988.57129,
+    y: 367.09097,
+  },
+  "D11": {
+    width: 76.847221,
+    height: 256.61069,
+    x: 1072.5413,
+    y: 367.08929,
+  },
+  "D10": {
+    width: 80.893265,
+    height: 256.60803,
+    x: 1151.3864,
+    y: 367.09061,
+  },
+  "D9": {
+    width: 72.591599,
+    height: 256.61356,
+    x: 1234.9969,
+    y: 367.08783,
+  },
+  "D8": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1312.9922,
+    y: 367.08908,
+  },
+  "D7": {
+    width: 78.049431,
+    height: 256.60989,
+    x: 1392.625,
+    y: 367.08969,
+  },
+  "D6": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1474.8103,
+    y: 367.08908,
+  },
+  "D5": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1555.173,
+    y: 367.08908,
+  },
+  "D4": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1633.5356,
+    y: 367.08908,
+  },
+  "D3": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1711.8983,
+    y: 367.08908,
+  },
+  "D2": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1790.261,
+    y: 367.08908,
+  },
+  "ngnd0": {
+    width: 84.595268,
+    height: 256.60565,
+    x: 1868.7933,
+    y: 367.0918,
+  },
+  "RST1": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1955.6936,
+    y: 367.08905,
+  },
+  "D0": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 2034.2233,
+    y: 367.08905,
+  },
+  "D1": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 2112.7529,
+    y: 367.08905,
+  },
+  "D13": {
+    width: 78.98185,
+    height: 256.60928,
+    x: 988.57031,
+    y: 952.03479,
+  },
+  "n3v3": {
+    width: 79.837097,
+    height: 256.6087,
+    x: 1069.5504,
+    y: 952.0351,
+  },
+  "AREF": {
+    width: 86.024788,
+    height: 256.60474,
+    x: 1151.3879,
+    y: 952.03705,
+  },
+  "A0": {
+    width: 68.180794,
+    height: 256.61664,
+    x: 1239.4093,
+    y: 952.03113,
+  },
+  "A1": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1312.9922,
+    y: 952.03387,
+  },
+  "A2": {
+    width: 78.049431,
+    height: 256.60989,
+    x: 1392.625,
+    y: 952.03448,
+  },
+  "A3": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1474.8103,
+    y: 952.03387,
+  },
+  "A4": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1633.5355,
+    y: 952.03387,
+  },
+  "A5": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1555.173,
+    y: 952.03387,
+  },
+  "A6": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1711.8983,
+    y: 952.03387,
+  },
+  "A7": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 1790.2609,
+    y: 952.03387,
+  },
+  "n5v": {
+    width: 84.595268,
+    height: 256.60565,
+    x: 1868.7933,
+    y: 952.03662,
+  },
+  "RST0": {
+    width: 70.018097,
+    height: 256.61536,
+    x: 1955.6914,
+    y: 952.03174,
+  },
+  "ngnd1": {
+    width: 82.436722,
+    height: 256.60703,
+    x: 2028.0118,
+    y: 952.03589,
+  },
+  "VIN": {
+    width: 76.227379,
+    height: 256.61111,
+    x: 2112.7529,
+    y: 952.03387,
+  },
+}
+
 function makePath(points: Array<[number, number]>): string {
   const [x, y] = points[0]
   return `M${x} ${y}` + points.slice(1).map(([x, y]) => `L${x} ${y}`).join('')
@@ -108,31 +291,17 @@ const ImageBoardView: React.FC = () => {
   const { arrow, refs, getReferenceProps, getFloatingProps, isOpen, floatingStyles } = useRailswitchTooltip()
 
   const handleClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    const id = (e.target as HTMLElement).id
+    const node = (e.target as HTMLElement).dataset.node
 
-    if (id) {
-      const rowMatch = id.match(/^row(\d+)$/)
-      if (rowMatch) {
-        const row = parseInt(rowMatch[1], 10)
+    if (node) {
+      if (/^\d+$/.test(node)) {
+        const row = parseInt(node, 10)
         handleNodeClick(row)
         return
       }
 
-      if (['tNeg', 'bNeg', 'ngnd0', 'ngnd1'].includes(id)) {
-        handleNodeClick('GND')
-        return
-      }
-
-      if (id === 'n5v') {
-        handleNodeClick('5V')
-        return
-      }
-
-      const nanoMatch = id.match(/^(a|d)(\d+)$/)
-      if (nanoMatch) {
-        handleNodeClick(id.toUpperCase())
-        return
-      }
+      handleNodeClick(node)
+      return
     }
     handleNodeClick(null)
   }
@@ -161,6 +330,7 @@ const ImageBoardView: React.FC = () => {
         width={ROW_WIDTH}
         height={ROW_HEIGHT}
         style={style}
+        data-node={row}
       />
     )
   })
@@ -181,7 +351,7 @@ const ImageBoardView: React.FC = () => {
         style.fill = color
       }
       return (
-        <rect className='rail' key={id} id={id} width={2514.6069} height={85.783966} x={x} y={y} ry={0.31750244} style={style} />
+        <rect className='rail' key={id} id={id} width={2514.6069} height={85.783966} x={x} y={y} ry={0.31750244} style={style} data-node={node} />
       )
     })
   }, [nodeColors, supplySwitchPos])
@@ -249,6 +419,18 @@ const ImageBoardView: React.FC = () => {
     })
   }, [netlist, nodeColors])
 
+  const nanoPins = useMemo(() => {
+    return Object.entries(NANO_NODES).map(([node, { x, y, width, height }]) => {
+      const color = nodeColors.get(node)
+      const style: React.CSSProperties = {}
+      if (color) {
+        style.fill = color
+      }
+      const id = `nano-${node}`
+      return <rect key={node} className='nanoPin' id={id} data-node={node} x={x} y={y} width={width} height={height} ry={0.37795275} style={style} />
+    })
+  }, [nodeColors])
+
   return (
     <div className="ImageBoardView">
       <SelectionInfo />
@@ -263,278 +445,7 @@ const ImageBoardView: React.FC = () => {
         onContextMenu={handleContextMenu}
       >
         <g id="g1">
-          <g id="nanoHeader">
-            <rect
-              className='nanoPin'
-              id="d12"
-              width={81.971809}
-              height={256.60733}
-              x={988.57129}
-              y={367.09097}
-              ry={0.37795275}
-            />
-            <rect
-              className='nanoPin'
-              id="d11"
-              width={76.847221}
-              height={256.61069}
-              x={1072.5413}
-              y={367.08929}
-              ry={0.3779577}
-            />
-            <rect
-              className='nanoPin'
-              id="d10"
-              width={80.893265}
-              height={256.60803}
-              x={1151.3864}
-              y={367.09061}
-              ry={0.3779538}
-            />
-            <rect
-              className='nanoPin'
-              id="d9"
-              width={72.591599}
-              height={256.61356}
-              x={1234.9969}
-              y={367.08783}
-              ry={0.37796193}
-            />
-            <rect
-              className='nanoPin'
-              id="d8"
-              width={76.227379}
-              height={256.61111}
-              x={1312.9922}
-              y={367.08908}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="d7"
-              width={78.049431}
-              height={256.60989}
-              x={1392.625}
-              y={367.08969}
-              ry={0.37795654}
-            />
-            <rect
-              className='nanoPin'
-              id="d6"
-              width={76.227379}
-              height={256.61111}
-              x={1474.8103}
-              y={367.08908}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="d5"
-              width={76.227379}
-              height={256.61111}
-              x={1555.173}
-              y={367.08908}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="d4"
-              width={76.227379}
-              height={256.61111}
-              x={1633.5356}
-              y={367.08908}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="d3"
-              width={76.227379}
-              height={256.61111}
-              x={1711.8983}
-              y={367.08908}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="d2"
-              width={76.227379}
-              height={256.61111}
-              x={1790.261}
-              y={367.08908}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="ngnd0"
-              width={84.595268}
-              height={256.60565}
-              x={1868.7933}
-              y={367.0918}
-              ry={0.37795028}
-            />
-            <rect
-              className='nanoPin'
-              id="rst1"
-              width={76.227379}
-              height={256.61111}
-              x={1955.6936}
-              y={367.08905}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="d0"
-              width={76.227379}
-              height={256.61111}
-              x={2034.2233}
-              y={367.08905}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="d1"
-              width={76.227379}
-              height={256.61111}
-              x={2112.7529}
-              y={367.08905}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="d13"
-              width={78.98185}
-              height={256.60928}
-              x={988.57031}
-              y={952.03479}
-              ry={0.37795562}
-            />
-            <rect
-              className='nanoPin'
-              id="n3v3"
-              width={79.837097}
-              height={256.6087}
-              x={1069.5504}
-              y={952.0351}
-              ry={0.37795478}
-            />
-            <rect
-              className='nanoPin'
-              id="aref"
-              width={86.024788}
-              height={256.60474}
-              x={1151.3879}
-              y={952.03705}
-              ry={0.37794897}
-            />
-            <rect
-              className='nanoPin'
-              id="a0"
-              width={68.180794}
-              height={256.61664}
-              x={1239.4093}
-              y={952.03113}
-              ry={0.37796646}
-            />
-            <rect
-              className='nanoPin'
-              id="a1"
-              width={76.227379}
-              height={256.61111}
-              x={1312.9922}
-              y={952.03387}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="a2"
-              width={78.049431}
-              height={256.60989}
-              x={1392.625}
-              y={952.03448}
-              ry={0.37795654}
-            />
-            <rect
-              className='nanoPin'
-              id="a3"
-              width={76.227379}
-              height={256.61111}
-              x={1474.8103}
-              y={952.03387}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="a4"
-              width={76.227379}
-              height={256.61111}
-              x={1633.5355}
-              y={952.03387}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="a5"
-              width={76.227379}
-              height={256.61111}
-              x={1555.173}
-              y={952.03387}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="a6"
-              width={76.227379}
-              height={256.61111}
-              x={1711.8983}
-              y={952.03387}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="a7"
-              width={76.227379}
-              height={256.61111}
-              x={1790.2609}
-              y={952.03387}
-              ry={0.37795833}
-            />
-            <rect
-              className='nanoPin'
-              id="n5v"
-              width={84.595268}
-              height={256.60565}
-              x={1868.7933}
-              y={952.03662}
-              ry={0.37795028}
-            />
-            <rect
-              className='nanoPin'
-              id="rst0"
-              width={70.018097}
-              height={256.61536}
-              x={1955.6914}
-              y={952.03174}
-              ry={0.37796459}
-            />
-            <rect
-              className='nanoPin'
-              id="ngnd1"
-              width={82.436722}
-              height={256.60703}
-              x={2028.0118}
-              y={952.03589}
-              ry={0.37795234}
-            />
-            <rect
-              className='nanoPin'
-              id="vin"
-              width={76.227379}
-              height={256.61111}
-              x={2112.7529}
-              y={952.03387}
-              ry={0.37795833}
-            />
-          </g>
+          <g id="nanoHeader">{nanoPins}</g>
           <g id="rails">{rails}</g>
           <g id="Rows">{rows}</g>
           <rect
