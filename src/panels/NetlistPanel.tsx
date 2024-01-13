@@ -7,7 +7,7 @@ import './NetlistPanel.scss'
 
 export const NetlistPanel: React.FC = () => {
   const { netlist, updateNet, addNet, removeNet } = useContext(JumperlessStateContext)
-  const { handleNodeClick, highlightedNode, setHighlightedNode, highlightedNet, setHighlightedNet } = useContext(InteractionContext)!
+  const { handleNodeClick, highlightedNode, setHighlightedNode, selectedNode, highlightedNet, setHighlightedNet } = useContext(InteractionContext)!
   /* const { netlist } = useContext(ConnectionContext)! */
   /* const [netlist, setNetlist] = useState<Array<NetlistEntry>>(example) */
   const [editing, setEditing] = useState<number | null>(null)
@@ -56,7 +56,7 @@ export const NetlistPanel: React.FC = () => {
               <div className='color'><input type="color" value={net.color} onChange={e => handleColorChange(net.index, e)} /></div>
             </div>
             <div className='nodes'>
-              {net.nodes.map(node => <NodeRef key={node} node={node} highlighted={highlightedNode === node} onHover={setHighlightedNode} onClick={handleNodeClick} />)}
+              {net.nodes.map(node => <NodeRef key={node} node={node} selected={selectedNode === node} highlighted={highlightedNode === node} onHover={setHighlightedNode} onClick={handleNodeClick} />)}
             </div>
             {!isSpecial(net) && <button onClick={() => removeNet(net.index)}>Remove</button>}
           </div>

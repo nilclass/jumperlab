@@ -52,6 +52,10 @@
   font-family: monospace;
   display: inline-block;
 
+  &.selected {
+    border-color: #f74599;
+  }
+
   &.highlight {
     color: #333;
     background: #f74599;

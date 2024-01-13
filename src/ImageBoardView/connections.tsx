@@ -3,6 +3,7 @@ import { JumperlessNode, Netlist } from '../jlctlapi'
 type Connection = {
   a: ConnectionSpot
   b: ConnectionSpot
+  netIndex: number
 }
 
 type Row = JumperlessNode & number
@@ -48,8 +49,8 @@ export function computeLayout(netlist: Netlist): Array<Connection> {
       }
     }
 
-    computeHalfNet(connections, rowsTop, occupiedRangesTop)
-    computeHalfNet(connections, rowsBottom, occupiedRangesBottom)
+    computeHalfNet(connections, rowsTop, occupiedRangesTop, net.index)
+    computeHalfNet(connections, rowsBottom, occupiedRangesBottom, net.index)
 
     if (rowsTop.length > 0 && rowsBottom.length > 0) {
       const topNode = rowsTop[0]
@@ -60,6 +61,7 @@ export function computeLayout(netlist: Netlist): Array<Connection> {
       })
 
       connections.push({
+        netIndex: net.index,
         a: {
           node: topNode,
           index: 4,
@@ -75,7 +77,7 @@ export function computeLayout(netlist: Netlist): Array<Connection> {
   return connections
 }
 
-function computeHalfNet(connections: Array<Connection>, rows: Array<Row>, occupiedRanges: OccupiedRanges) {
+function computeHalfNet(connections: Array<Connection>, rows: Array<Row>, occupiedRanges: OccupiedRanges, netIndex: number) {
   if (rows.length > 1) {
     rows.sort((a, b) => a > b ? 1 : a < b ? -1 : 0)
     for (let i = 1; i < rows.length; i++) {
@@ -85,6 +87,7 @@ function computeHalfNet(connections: Array<Connection>, rows: Array<Row>, occupi
         occupiedRanges[index].push(range)
       }
       connections.push({
+        netIndex: netIndex,
         a: {
           node: rows[i - 1],
           index,
