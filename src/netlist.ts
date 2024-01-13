@@ -86,9 +86,72 @@ export function netlistNetForNode(netlist: Netlist, node: JumperlessNode): Netli
 }
 
 function randomColor() {
-  const r = Math.floor(Math.random() * 0xFF)
-  const g = Math.floor(Math.random() * 0xFF)
-  const b = Math.floor(Math.random() * 0xFF)
+  let setRandomChanneltoZero = Math.floor(Math.random() * 3) //this picks a random channel to (not quite) zero out, so we get more saturated colors
+
+  let max = 0
+  //console.log(setRandomChanneltoZero)
+
+  let r = Math.floor((Math.random() * 0x55) * 0x3)
+  let g = Math.floor((Math.random() * 0x55) * 0x3)
+  let b = Math.floor((Math.random() * 0x55) * 0x3)
+
+  r = (setRandomChanneltoZero % 3 === 0 ? Math.floor(r*0.25) : r)
+  g = (setRandomChanneltoZero % 3 === 1 ? Math.floor(g*0.25) : g)
+  b = (setRandomChanneltoZero % 3 === 2 ? Math.floor(b*0.25) : b)
+
+  max = Math.max(r, g, b)
+
+  console.log(max)
+  console.log("unmodified: ")
+  console.log(r, g, b)
+
+  if (max <= 0xBB) { //if it's a dark color, make it brighter
+    console.log("dark")
+
+    if (r > (max - 0x55)) { //this value kinda determines the likelihoood of getting secondary colors, so it's tuned to be roughly 50/50 primary and secondaries (rgb are primaries in this case)
+      r *= 3
+    }
+    if (g > (max - 0x55)) {
+      g *= 3
+    }
+    if (b > (max - 0x55)) {
+      b *= 3
+    }
+
+    max = Math.max(r, g, b)
+
+    if (max < 0xAA) { //even with multiplying by 3, it's still dark, so we need to make it brighter
+
+      //console.log("still dark")
+      //console.log(max)
+
+      if (r === max) {
+        r *= 4
+      }
+      if (g === max) {
+        g *= 4
+      }
+      if (b === max) {
+        b *= 4
+      }
+    }
+
+    if (r > 0xFF) {
+      r = 0xFF
+    }
+    if (g > 0xFF) {
+      g = 0xFF
+    }
+
+    if (b > 0xFF) {
+      b = 0xFF
+    }
+
+    //console.log("modified: ")
+    //console.log(r, g, b)
+  }
+
+
   const color = '#' + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0')
   return color
 }
