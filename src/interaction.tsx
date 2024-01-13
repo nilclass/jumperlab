@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useContext, useMemo } from 'react'
 import { JumperlessStateContext } from './JumperlessState';
-import { JumperlessNode } from './jlctlapi';
+import { JumperlessNode, NetlistEntry } from './jlctlapi';
+import { netlistNetForNode } from './netlist';
 
 export type Mode = 'select' | 'connect' | 'disconnect'
 
@@ -22,6 +23,8 @@ type InteractionContextType = {
   highlightedNet: number | null
   setHighlightedNet: (index: number | null) => void
 
+  selectedNet: NetlistEntry | null
+
   cursorHint: string | null
 }
 
@@ -36,8 +39,9 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
   const [highlightedNode, setHighlightedNode] = useState<JumperlessNode | null>(null)
   const [highlightedNet, setHighlightedNet] = useState<number | null>(null)
   const [mode, setMode] = useState<Mode>('select')
-  const { addBridge, disconnectNode } = useContext(JumperlessStateContext)
+  const { netlist, addBridge, disconnectNode } = useContext(JumperlessStateContext)
   const [cursorHint, setCursorHint] = useState(computeHint(mode, selectedNode))
+  const selectedNet = useMemo(() => selectedNode ? netlistNetForNode(netlist, selectedNode) : null, [netlist, selectedNode])
 
   function keySetMode(mode: Mode): string {
     setMode(mode)
@@ -133,6 +137,7 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
       setHighlightedNet,
       handleDismiss,
       cursorHint,
+      selectedNet,
     }}>
       {children}
     </InteractionContext.Provider>

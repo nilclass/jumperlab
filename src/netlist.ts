@@ -71,14 +71,18 @@ export function netlistGetNodes(netlist: Netlist, index: Number): Array<Jumperle
   return net.nodes
 }
 
-export function netlistNodeColors(netlist: Netlist): Map<JumperlessNode, string> {
-  const colors = new Map()
+export function netlistNodeNets(netlist: Netlist): Map<JumperlessNode, NetlistEntry> {
+  const nets = new Map()
   netlist.forEach(net => {
     net.nodes.forEach(node => {
-      colors.set(node, net.color)
+      nets.set(node, net)
     })
   })
-  return colors
+  return nets
+}
+
+export function netlistNetForNode(netlist: Netlist, node: JumperlessNode): NetlistEntry | null {
+  return netlist.find(net => net.nodes.includes(node)) || null
 }
 
 function randomColor() {
@@ -86,7 +90,6 @@ function randomColor() {
   const g = Math.floor(Math.random() * 0xFF)
   const b = Math.floor(Math.random() * 0xFF)
   const color = '#' + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0')
-  console.log('generated', color)
   return color
 }
 

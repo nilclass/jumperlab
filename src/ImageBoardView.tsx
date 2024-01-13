@@ -19,7 +19,7 @@ import {
 import './ImageBoardView.scss'
 import { InteractionContext } from "./interaction"
 import { SelectionInfo } from "./SelectionInfo"
-import { netlistNodeColors } from "./netlist"
+import { netlistNodeNets } from "./netlist"
 import { CursorModeIndicator } from "./CursorModeIndicator"
 import { computeLayout } from "./ImageBoardView/connections"
 
@@ -276,8 +276,13 @@ function makePath(points: Array<[number, number]>): string {
 
 const ImageBoardView: React.FC = () => {
   const { netlist, supplySwitchPos, setSupplySwitchPos } = useContext(JumperlessStateContext)
-  const { mode, handleNodeClick, selectedNode, handleDismiss, cursorHint, setHighlightedNode, highlightedNet } = useContext(InteractionContext)!
-  const nodeColors = useMemo(() => netlistNodeColors(netlist), [netlist])
+  const { mode, handleNodeClick, selectedNode, handleDismiss, cursorHint, setHighlightedNode, highlightedNet, setHighlightedNet } = useContext(InteractionContext)!
+  const nodeNets = useMemo(() => netlistNodeNets(netlist), [netlist])
+
+  function nodeColor(node: JumperlessNode): string | null {
+    const net = nodeNets.get(node)
+    return net ? net.color : null
+  }
 
   const switchDiff = useMemo(() => {
     return (SWITCH_OPTS.indexOf(supplySwitchPos) - 1) * 55
@@ -307,7 +312,10 @@ const ImageBoardView: React.FC = () => {
   }
 
   const handleHover = (e: React.MouseEvent<SVGSVGElement>) => {
-    setHighlightedNode(elementNode(e.target as HTMLElement))
+    const node = elementNode(e.target as HTMLElement)
+    setHighlightedNode(node)
+    const net = node && nodeNets.get(node)
+    setHighlightedNet(net ? net.index : null)
   }
 
   const handleContextMenu = (e: React.MouseEvent) => {
@@ -318,7 +326,7 @@ const ImageBoardView: React.FC = () => {
 
   const rows = ROW_POSITIONS.map(([x, y], i) => {
     const row = i + 1
-    const fill = nodeColors.get(row)
+    const fill = nodeColor(row)
     const style: React.CSSProperties = {}
     if (fill) {
       style.fill = fill
@@ -349,7 +357,7 @@ const ImageBoardView: React.FC = () => {
   const rails = useMemo(() => {
     return Object.entries(RAIL_POS).map(([id, [x, y]]) => {
       const node = railNode(id, supplySwitchPos)
-      const color = node && nodeColors.get(node)
+      const color = node && nodeColor(node)
       const style: React.CSSProperties = {}
       if (color) {
         style.fill = color
@@ -358,7 +366,7 @@ const ImageBoardView: React.FC = () => {
         <rect className='rail' key={id} id={id} width={2514.6069} height={85.783966} x={x} y={y} ry={0.31750244} style={style} data-node={node} />
       )
     })
-  }, [nodeColors, supplySwitchPos])
+  }, [nodeNets, supplySwitchPos])
 
   const connections = useMemo(() => {
     return computeLayout(netlist).map(({ a, b, netIndex }) => {
@@ -414,18 +422,18 @@ const ImageBoardView: React.FC = () => {
       }
 
       const style = {
-        stroke: nodeColors.get(a.node),
+        stroke: nodeColor(a.node)!,
         strokeWidth: netIndex === highlightedNet ? 16 : 8,
         fill: 'none',
       }
       const id = `${a.node}-${b.node}`
       return <path className='connection' key={id} id={id} style={style} d={d} />
     })
-  }, [netlist, nodeColors, highlightedNet])
+  }, [netlist, nodeNets, highlightedNet])
 
   const nanoPins = useMemo(() => {
     return Object.entries(NANO_NODES).map(([node, { x, y, width, height }]) => {
-      const color = nodeColors.get(node)
+      const color = nodeColor(node)
       const style: React.CSSProperties = {}
       if (color) {
         style.fill = color
@@ -433,7 +441,7 @@ const ImageBoardView: React.FC = () => {
       const id = `nano-${node}`
       return <rect key={node} className='nanoPin' id={id} data-node={node} x={x} y={y} width={width} height={height} ry={0.37795275} style={style} />
     })
-  }, [nodeColors])
+  }, [nodeNets])
 
   return (
     <div className="ImageBoardView">

@@ -11,19 +11,29 @@ import { Toolbar } from './Toolbar';
 
 function App() {
   return (
+    // Provides UI settings
     <SettingsWrapper>
+
+      {/* Provides connection to the jlctl server */}
       <ConnectionWrapper baseUrl='http://localhost:8080'>
+
+        {/* Manages the board state (in-memory state and synchronization) */}
         <JumperlessState>
+
+          {/* Manages modal dialogs */}
           <DialogWrapper>
+
+            {/* Manages interactions with the board (mode, selection, highlight) */}
             <InteractionController>
+
               <div className='App'>
-                {/* <NodeDetails node={selectedNode} mode={mode} onSetMode={handleSetMode} /> */}
                 <Toolbar />
                 <div className='main'>
                   <BoardView />
                   <Sidebar />
                 </div>
               </div>
+
             </InteractionController>
           </DialogWrapper>
         </JumperlessState>
