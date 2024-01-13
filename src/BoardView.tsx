@@ -13,13 +13,6 @@ import { netlistGetNodes } from './netlist'
 import { CameraSelectionDialog } from './CameraSelectionDialog'
 import { useOpenDialog } from './dialogs'
 
-type BoardViewProps = {
-  selectedNode: JumperlessNode | null
-  onNodeClick: (node: JumperlessNode | null) => void
-}
-
-type BoardViewMode = 'image' | 'camera' | 'blank'
-
 export const BoardViewModeSelect = () => {
   const [mode, setMode] = useSetting('boardViewMode', 'image')
 
@@ -51,11 +44,11 @@ const blankStyle: React.CSSProperties = {
 export const BoardView: React.FC = () => {
   const { netlist } = useContext(JumperlessStateContext)
   const { selectedNode, handleNodeClick: onNodeClick, setHighlightedNode, highlightedNode, highlightedNet } = useContext(InteractionContext)!
-  const [mode, setMode] = useSetting('boardViewMode', 'image')
+  const [mode] = useSetting('boardViewMode', 'image')
   const ref = useRef<HTMLDivElement>(null)
   // size of the view area (detected, changes on window resize)
   const [viewSize, setViewSize] = useState([100, 100])
-  const [currentCam, setCurrentCam] = useSetting<string | null>('currentCameraId', null)
+  const [currentCam] = useSetting<string | null>('currentCameraId', null)
   const openDialog = useOpenDialog()
 
   // size of the background (e.g. camera feed) in source coordinates (e.g. physical camera pixels)
@@ -70,7 +63,7 @@ export const BoardView: React.FC = () => {
       return netlistGetNodes(netlist, highlightedNet).filter(node => typeof node === 'number') as Array<number>
     }
     return []
-  }, [highlightedNode, highlightedNet])
+  }, [highlightedNode, highlightedNet, netlist])
 
   // size of the background in view coordinates. Depending on the ratios of the view and background,
   // either the width or the height of this will equal the one from viewSize. The respective other
@@ -103,7 +96,7 @@ export const BoardView: React.FC = () => {
 
   const [pinOverlay, setPinOverlay] = useState(true)
 
-  function updateSize() {
+  const updateSize = useCallback(() => {
     if (!ref.current) {
       return
     }
@@ -112,7 +105,7 @@ export const BoardView: React.FC = () => {
     if (width !== viewSize[0] || height !== viewSize[1]) {
       setViewSize([width, height])
     }
-  }
+  }, [viewSize, setViewSize])
 
   // Check if view size is still correct after rendering
   useLayoutEffect(updateSize)
@@ -124,7 +117,7 @@ export const BoardView: React.FC = () => {
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
-  }, [])
+  }, [updateSize])
 
   const handleBoardRectChange = (rect: Rect) => {
     // translate view coordinates to background (camera) coordinates
@@ -144,7 +137,7 @@ export const BoardView: React.FC = () => {
     }
 
     onNodeClick(segmentToNode(segmentId))
-  }, [adjust, selectedSegment, onNodeClick])
+  }, [adjust, onNodeClick])
 
   const handleSegmentHover = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (adjust) {
@@ -160,7 +153,7 @@ export const BoardView: React.FC = () => {
       }
       setHighlightedNode(segmentToNode(segmentId))
     }
-  }, [setHighlightedNode])
+  }, [adjust, setHighlightedNode])
 
   useLayoutEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -175,9 +168,11 @@ export const BoardView: React.FC = () => {
     }
 
     if (ref.current) {
-      ref.current.querySelector<HTMLDivElement>('.viewarea')!.addEventListener('wheel', handleWheel)
-    
-      return () => ref.current?.querySelector<HTMLDivElement>('.viewarea')!.removeEventListener('wheel', handleWheel)
+      const viewarea = ref.current?.querySelector<HTMLDivElement>('.viewarea')!
+      if (viewarea) {
+        viewarea.addEventListener('wheel', handleWheel)
+        return () => viewarea.removeEventListener('wheel', handleWheel)
+      }
     }
   }, [setScale])
 
@@ -265,7 +260,7 @@ const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void, de
       },
       (e) => console.log('no cam')
     )
-  }, [])
+  }, [deviceId, onSizeChange])
   
   return (
     <video ref={ref} autoPlay />
@@ -274,7 +269,7 @@ const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void, de
 
 const ConnectionLayer: React.FC = () => {
   const ref = useRef<HTMLCanvasElement>(null)
-  const { bridges, netlist } = useContext(ConnectionContext)!
+  const { bridges } = useContext(ConnectionContext)!
 
   useLayoutEffect(() => {
     const segmentBridges = bridges

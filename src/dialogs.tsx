@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext, useLayoutEffect } from 'react'
+import React, { useState, useRef, useContext, useLayoutEffect, useCallback } from 'react'
 
 type DialogContextType = {
   openDialog: (dialog: React.ReactNode) => void
@@ -9,9 +9,10 @@ const DialogContext = React.createContext<DialogContextType | null>(null)
 
 export const DialogWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [dialog, setDialog] = useState<React.ReactNode>(null)
+  const closeDialog = useCallback(() => setDialog(null), [setDialog])
 
   return (
-    <DialogContext.Provider value={{ openDialog: setDialog, closeDialog: () => setDialog(null) }}>
+    <DialogContext.Provider value={{ openDialog: setDialog, closeDialog}}>
       {dialog}
       {children}
     </DialogContext.Provider>
@@ -52,7 +53,7 @@ export const ModalDialog: React.FC<{ children: React.ReactNode, className?: stri
  
     document.body.addEventListener('click', handleBodyClick)
     return () => document.body.removeEventListener('click', handleBodyClick)
-   }, [firstRender])
+   }, [firstRender, closeDialog])
   
   return (
     <dialog className={className || ''} ref={ref} onClose={closeDialog}>

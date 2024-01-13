@@ -18,7 +18,7 @@ export const ConnectionPanel: React.FC = () => {
       }, pollIntervalMs)
       return () => clearTimeout(timer)
     }
-  }, [busy, poll, pollIntervalMs])
+  }, [busy, poll])
 
   return (
     <div className='ConnectionPanel panel'>

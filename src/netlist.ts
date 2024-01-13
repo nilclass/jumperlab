@@ -66,7 +66,7 @@ function removeNet(netlist: Netlist, index: number): Netlist {
 export function netlistGetNodes(netlist: Netlist, index: Number): Array<JumperlessNode> {
   const net = netlist.find(net => net.index === index)
   if (!net) {
-    throw new Error(`Net not found: ${index}`)
+    return []
   }
   return net.nodes
 }

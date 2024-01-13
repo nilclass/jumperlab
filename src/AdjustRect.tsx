@@ -51,7 +51,7 @@ export const AdjustRect: React.FC<{ rect: Rect, onRectChange: (r: Rect) => void 
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [dragging, lastPointer, rect])
+  }, [dragging, lastPointer, rect, onRectChange])
 
   const cornerStyle = (point: [number, number]) => {
     return {
@@ -85,6 +85,9 @@ export const AdjustRect: React.FC<{ rect: Rect, onRectChange: (r: Rect) => void 
     </div>
   )
 }
+
+// Code below here is derived from the "proof-of-concept implementation"
+// shared in this post: https://math.stackexchange.com/questions/296794/finding-the-transform-matrix-from-4-projected-points-with-javascript/339033#339033
 
 type M9 = [number, number, number,
            number, number, number,
@@ -149,7 +152,7 @@ function general2DProjection(
 
 function transform2d(w: number, h: number, x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number) {
   const t = general2DProjection(0, 0, x1, y1, w, 0, x2, y2, 0, h, x3, y3, w, h, x4, y4);
-  for(let i = 0; i != 9; ++i) t[i] = t[i]/t[8];
+  for(let i = 0; i !== 9; ++i) t[i] = t[i]/t[8];
   const t2 = [t[0], t[3], 0, t[6],
        t[1], t[4], 0, t[7],
        0   , 0   , 1, 0   ,

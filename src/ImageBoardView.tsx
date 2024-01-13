@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useRef, useState } from "react"
+import React, { useContext, useMemo, useRef, useState, useCallback } from "react"
 import { JumperlessStateContext } from './JumperlessState'
 import { JumperlessNode, NetlistEntry, SupplySwitchPos } from "./jlctlapi"
 import {
@@ -72,6 +72,13 @@ function holePosTop(row: JumperlessNode & number, index: number): [number, numbe
 function holePosBottom(row: JumperlessNode & number, index: number): [number, number] {
   const [x, y] = ROW_CENTERS[row - 1]
   return [x, y + ROW_HEIGHT - ROW_INDEX_OFFSETS[index]]
+}
+
+const RAIL_POS = {
+  tPos: [347.19583, 1278.9934],
+  tNeg: [347.19583, 1364.8767],
+  bPos: [349.44824, 2717.2117],
+  bNeg: [349.44824, 2803.095]
 }
 
 function railNode(rail: string, supplySwitchPos: SupplySwitchPos): JumperlessNode | null {
@@ -281,10 +288,10 @@ const ImageBoardView: React.FC = () => {
   const nodeNets = useMemo(() => netlistNodeNets(netlist), [netlist])
   const [australia] = useSetting('australia', false)
 
-  function nodeColor(node: JumperlessNode): string | null {
+  const nodeColor = useCallback((node: JumperlessNode): string | null => {
     const net = nodeNets.get(node)
     return net ? net.color : null
-  }
+  }, [nodeNets])
 
   const switchDiff = useMemo(() => {
     return (SWITCH_OPTS.indexOf(supplySwitchPos) - 1) * 55
@@ -349,13 +356,6 @@ const ImageBoardView: React.FC = () => {
     )
   })
 
-  const RAIL_POS = {
-    tPos: [347.19583, 1278.9934],
-    tNeg: [347.19583, 1364.8767],
-    bPos: [349.44824, 2717.2117],
-    bNeg: [349.44824, 2803.095]
-  }
-
   const rails = useMemo(() => {
     return Object.entries(RAIL_POS).map(([id, [x, y]]) => {
       const node = railNode(id, supplySwitchPos)
@@ -368,7 +368,7 @@ const ImageBoardView: React.FC = () => {
         <rect className='rail' key={id} id={id} width={2514.6069} height={85.783966} x={x} y={y} ry={0.31750244} style={style} data-node={node} />
       )
     })
-  }, [nodeNets, supplySwitchPos])
+  }, [supplySwitchPos, nodeColor])
 
   const specialMarkers = useMemo(() => {
     const markers: Array<React.ReactNode> = []
@@ -390,7 +390,7 @@ const ImageBoardView: React.FC = () => {
         const aPos = holePosTop(a.node, a.index)
         const bPos = holePosTop(b.node, b.index)
         d = makePath(
-          Math.abs(a.node - b.node) == 1
+          Math.abs(a.node - b.node) === 1
           ? [aPos, bPos] // direct neighbors get a straight connection
           : [ // all others are connected with midpoints
               aPos,
@@ -409,7 +409,7 @@ const ImageBoardView: React.FC = () => {
         const aPos = holePosBottom(a.node, a.index)
         const bPos = holePosBottom(b.node, b.index)
         d = makePath(
-          Math.abs(a.node - b.node) == 1
+          Math.abs(a.node - b.node) === 1
           ? [aPos, bPos] // direct neighbors get a straight connection
           : [ // all others are connected with midpoints
               aPos,
@@ -443,7 +443,7 @@ const ImageBoardView: React.FC = () => {
       const id = `${a.node}-${b.node}`
       return <path className='connection' key={id} id={id} style={style} d={d} />
     })
-  }, [netlist, nodeNets, highlightedNet])
+  }, [netlist, highlightedNet, nodeColor])
 
   const nanoPins = useMemo(() => {
     return Object.entries(NANO_NODES).map(([node, { x, y, width, height }]) => {
@@ -455,7 +455,7 @@ const ImageBoardView: React.FC = () => {
       const id = `nano-${node}`
       return <rect key={node} className='nanoPin' id={id} data-node={node} x={x} y={y} width={width} height={height} ry={0.37795275} style={style} />
     })
-  }, [nodeNets])
+  }, [nodeColor])
 
   return (
     <div className="ImageBoardView">

@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useCallback, useRef, useLayoutEffect, useMemo } from 'react'
+import React, { useState, useContext, useEffect, useCallback, useRef, useMemo } from 'react'
 import { ModalDialog } from './dialogs'
 
 type SettingsMap = { [key: string]: any }
@@ -53,7 +53,7 @@ export function useSetting<T>(key: string, defaultValue: T): [T, (value: ValuePa
       } else {
         setValue(key, value)
       }
-    }, [setValue, key],
+    }, [setValue, key, defaultValue],
   )
 
   return [

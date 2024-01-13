@@ -1,12 +1,12 @@
-import React, { useCallback, useContext, useState } from 'react'
+import React, { useContext, useState } from 'react'
 import { InteractionContext } from '../interaction'
-import { JumperlessNode, NetlistEntry } from '../jlctlapi'
+import { NetlistEntry } from '../jlctlapi'
 import { JumperlessStateContext } from '../JumperlessState'
 import { NodeRef } from '../NodeRef'
 import './NetlistPanel.scss'
 
 export const NetlistPanel: React.FC = () => {
-  const { netlist, updateNet, addNet, removeNet } = useContext(JumperlessStateContext)
+  const { netlist, updateNet, removeNet } = useContext(JumperlessStateContext)
   const { handleNodeClick, highlightedNode, setHighlightedNode, selectedNode, highlightedNet, setHighlightedNet } = useContext(InteractionContext)!
   /* const { netlist } = useContext(ConnectionContext)! */
   /* const [netlist, setNetlist] = useState<Array<NetlistEntry>>(example) */
@@ -14,10 +14,6 @@ export const NetlistPanel: React.FC = () => {
   
   const handleEdit = (index: number) => {
     setEditing(index)
-  }
-
-  const handleAdd = () => {
-    setEditing(addNet())
   }
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {

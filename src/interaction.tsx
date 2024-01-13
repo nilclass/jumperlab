@@ -58,7 +58,7 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
         return '...'
       } : () => keySetMode('disconnect')
     }
-  }, [selectedNode])
+  }, [selectedNode, disconnectNode])
 
   function handleNodeClick(node: JumperlessNode | null) {
     switch (mode) {

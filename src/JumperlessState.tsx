@@ -144,19 +144,20 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
     setSyncOnce(true)
   }
 
+
   useEffect(() => {
     if (syncOnce) {
       setNetlist(conn.netlist!)
       setSupplySwitchPos(conn.supplySwitchPos)
       setSyncOnce(false)
     }
-  }, [syncOnce])
+  }, [syncOnce]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (syncAuto && conn.ready) {
       syncToDevice(true)
     }
-  }, [syncAuto, netlist, supplySwitchPos])
+  }, [syncAuto, netlist, supplySwitchPos]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const updateNet = useCallback((index: number, update: UpdateFn) => {
     setNetlist(netlist => netlist.map(net => net.index === index ? update(net) : net))
@@ -191,7 +192,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
   const disconnectNode = useCallback((node: JumperlessNode) => {
     setNetlist(netlist => netlistDisconnectNode(netlist, node))
   }, [setNetlist])
-  
+
   return (
     <JumperlessStateContext.Provider value={{
       supplySwitchPos,

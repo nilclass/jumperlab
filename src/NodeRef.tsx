@@ -12,7 +12,7 @@ type NodeRefProps = {
 export const NodeRef: React.FC<NodeRefProps> = ({ node, selected, highlighted, onHover, onClick }) => {
   const handleEnter = useCallback(() => onHover && onHover(node), [onHover, node])
   const handleLeave = useCallback(() => onHover && onHover(null), [onHover])
-  const handleClick = useCallback(() => onClick && onClick(node), [onClick])
+  const handleClick = useCallback(() => onClick && onClick(node), [onClick, node])
   return (
     <button
       className={`NodeRef ${highlighted ? 'highlight' : ''} ${selected ? 'selected' : ''}`}

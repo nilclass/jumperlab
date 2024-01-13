@@ -57,7 +57,7 @@ export class JlCtl {
   }
 
   async putNetlist(netlist: Array<NetlistEntry>): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/nets`, {
+    await fetch(`${this.baseUrl}/nets`, {
       method: 'PUT',
       headers: {
         'content-type': 'application/json',

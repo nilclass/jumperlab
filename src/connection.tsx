@@ -24,18 +24,7 @@ export type ConnectionContextType = {
 export const ConnectionContext = React.createContext<ConnectionContextType | null>(null)
 
 export const ConnectionWidget: React.FC<{ pollIntervalMs: number }> = ({ pollIntervalMs }) => {
-  const { reachable, ready, poll } = useContext(ConnectionContext)!
-  const [busy, setBusy] = useState(false)
-
-  useEffect(() => {
-    if (!busy) {
-      const timer = setTimeout(() => {
-        /* setBusy(true)
-* poll().then(() => setBusy(false)) */
-      }, pollIntervalMs)
-      return () => clearTimeout(timer)
-    }
-  }, [busy, poll, pollIntervalMs])
+  const { reachable, ready } = useContext(ConnectionContext)!
 
   return (
     <div className='ConnectionWidget'>

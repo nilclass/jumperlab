@@ -13,7 +13,7 @@ export const Toolbar: React.FC = () => {
   return (
     <div className='Toolbar'>
       <div className='logo'>
-        <img src='/images/logo.svg' />
+        <img src='/images/logo.svg' alt='Jumperlab logo' />
         <h1>Jumperlab</h1>
       </div>
       <div>
