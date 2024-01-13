@@ -37,6 +37,11 @@ export function computeLayout(netlist: Netlist): Array<Connection> {
   const occupiedRangesBottom: OccupiedRanges = [[], [], [], [], []]
 
   for (const net of netlist) {
+    if (net.special && net.name === 'GND') {
+      // Ground connections are rendered with a special marker
+      continue
+    }
+
     const rowsTop = []
     const rowsBottom = []
     for (const node of net.nodes) {

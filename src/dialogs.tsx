@@ -40,11 +40,8 @@ export const ModalDialog: React.FC<{ children: React.ReactNode, className?: stri
   useLayoutEffect(() => {
     if (!firstRender) {
       setFirstRender(true)
-      console.log('first render')
       return
     }
-
-    console.log('not first render')
 
     function handleBodyClick(e: MouseEvent) {
       const rect = ref.current!.getBoundingClientRect()

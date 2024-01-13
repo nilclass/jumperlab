@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useRef, useState } from "react"
 import { JumperlessStateContext } from './JumperlessState'
-import { JumperlessNode, SupplySwitchPos } from "./jlctlapi"
+import { JumperlessNode, NetlistEntry, SupplySwitchPos } from "./jlctlapi"
 import {
   useFloating,
   autoUpdate,
@@ -22,6 +22,7 @@ import { SelectionInfo } from "./SelectionInfo"
 import { netlistNodeNets } from "./netlist"
 import { CursorModeIndicator } from "./CursorModeIndicator"
 import { computeLayout } from "./ImageBoardView/connections"
+import { useSetting } from "./Settings"
 
 const SWITCH_OPTS: Array<SupplySwitchPos> = [
   '8V',
@@ -278,6 +279,7 @@ const ImageBoardView: React.FC = () => {
   const { netlist, supplySwitchPos, setSupplySwitchPos } = useContext(JumperlessStateContext)
   const { mode, handleNodeClick, selectedNode, handleDismiss, cursorHint, setHighlightedNode, highlightedNet, setHighlightedNet } = useContext(InteractionContext)!
   const nodeNets = useMemo(() => netlistNodeNets(netlist), [netlist])
+  const [australia] = useSetting('australia', false)
 
   function nodeColor(node: JumperlessNode): string | null {
     const net = nodeNets.get(node)
@@ -367,6 +369,18 @@ const ImageBoardView: React.FC = () => {
       )
     })
   }, [nodeNets, supplySwitchPos])
+
+  const specialMarkers = useMemo(() => {
+    const markers: Array<React.ReactNode> = []
+    netlist.forEach(net => {
+      if (net.special) {
+        net.nodes.slice(1).forEach(node => {
+          markers.push(markerFor(net, node, australia))
+        })
+      }
+    })
+    return markers
+  }, [netlist, australia])
 
   const connections = useMemo(() => {
     return computeLayout(netlist).map(({ a, b, netIndex }) => {
@@ -511,6 +525,7 @@ const ImageBoardView: React.FC = () => {
             y={-0.00001924485}
           />
           <g className="connections">{connections}</g>
+          <g className="specialMarkers">{specialMarkers}</g>
         </g>
       </svg>
       <FloatingPortal>
@@ -528,6 +543,40 @@ const ImageBoardView: React.FC = () => {
       </FloatingPortal>
     </div>
   )
+}
+
+const GND: React.FC<{ color: string, x: number, y: number, flip?: boolean }> = ({ color, x, y, flip }) => {
+  const style = {
+    stroke: color,
+    strokeWidth: 4.12754,
+    fill: 'none',
+  }
+  return (
+    <g
+      transform={`translate(${x} ${y}) ${flip ? 'scale(1 -1)' : ''}`}
+    >
+      <path
+        style={style}
+        d={`m 7,78 c 0,-1.0732 -0.49529999999999996,-1.651 -1.4859200000000001,-1.651 h -9.24571 c -1.07316,0 -1.5684699999999998,0.578 -1.5684699999999998,1.651 0,1.0732 0.49529999999999996,1.651 1.5684699999999998,1.651 h 9.24571 c 0.9905999999999999,0 1.4859200000000001,-0.578 1.4859200000000001,-1.651 z m 6.02623,-9.5759 c 0,-1.0732 -0.49529999999999996,-1.651 -1.4859200000000001,-1.651 h -21.29816 c -1.07316,0 -1.5684699999999998,0.578 -1.5684699999999998,1.651 0,1.0731 0.49529999999999996,1.651 1.5684699999999998,1.651 h 21.29816 c 0.9905999999999999,0 1.4859200000000001,-0.578 1.4859200000000001,-1.651 z m 6.02622,-9.4934 c 0,-1.0732 -0.49529999999999996,-1.651 -1.4859200000000001,-1.651 h -33.43315 c -1.07317,0 -1.5684699999999998,0.578 -1.5684699999999998,1.651 0,1.0732 0.49529999999999996,1.651 1.5684699999999998,1.651 h 33.43315 c 0.9905999999999999,0 1.4859200000000001,-0.578 1.4859200000000001,-1.651 z m 6.02622,-9.4934 c 0,-1.1557 -0.49529999999999996,-1.7335 -1.4859200000000001,-1.7335 h -21.13305 v -29.3056 c 0,-0.9909999999999999 -0.5779,-1.4860000000000002 -1.65102,-1.4860000000000002 -1.07317,0 -1.65102,0.495 -1.65102,1.4860000000000002 v 29.3056 h -21.05051 c -1.07316,0 -1.5684699999999998,0.578 -1.5684699999999998,1.7335 0,1.0732 0.49529999999999996,1.6511 1.5684699999999998,1.6511 h 45.485600000000005 c 0.9905999999999999,0 1.4859200000000001,-0.578 1.4859200000000001,-1.6511 z`}
+        id="path34608" />
+    </g>
+  )
+}
+
+function markerFor(specialNet: NetlistEntry, node: JumperlessNode, flip: boolean): React.ReactNode {
+  if (specialNet.name === 'GND' && typeof node === 'number') {
+    const [x, y] = markerPos(node, flip)
+    return <GND key={node} color={specialNet.color} x={x} y={y} flip={flip} />
+  }
+  return null
+}
+
+function markerPos(row: JumperlessNode & number, flip: boolean): [number, number] {
+  if (row <= 30) {
+    return holePosTop(row, flip ? 0 : 4)
+  } else {
+    return holePosBottom(row, flip ? 4 : 0)
+  }
 }
 
 function useRailswitchTooltip() {
