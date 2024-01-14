@@ -2,6 +2,10 @@
   flex-grow: 1;
   position: relative;
 
+  &[data-busy="true"] {
+    opacity: 0.8;
+  }
+
   > svg {
     max-height: 90vh;
 

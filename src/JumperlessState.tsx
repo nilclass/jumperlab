@@ -17,6 +17,7 @@ type JumperlessStateContextType = {
   setSyncAuto: (value: boolean) => void
   addBridge: (a: JumperlessNode, b: JumperlessNode) => void
   disconnectNode: (node: JumperlessNode) => void
+  busy: boolean
 }
 
 type UpdateFn = (net: NetlistEntry) => NetlistEntry
@@ -34,6 +35,7 @@ const emptyState: JumperlessStateContextType = {
   setSyncAuto: () => {},
   addBridge() {},
   disconnectNode() {},
+  busy: false,
 }
 
 export const JumperlessStateContext = createContext<JumperlessStateContextType>(emptyState)
@@ -120,6 +122,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
   const [netlist, setNetlist] = useState(example)
   const [supplySwitchPos, setSupplySwitchPos] = useState<SupplySwitchPos>('3.3V')
   const conn = useContext(ConnectionContext)!;
+  const [busy, setBusy] = useState(false)
   const [syncOnce, setSyncOnce] = useState(false)
   const [syncAuto, setSyncAuto] = useState(false)
 
@@ -127,29 +130,32 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
     if (conn.jlctl === null) {
       throw new Error('Cannot sync, no device!')
     }
+    setBusy(true)
     if (!auto || (conn.supplySwitchPos !== supplySwitchPos)) {
       await conn.jlctl.setSupplySwitchPos(supplySwitchPos)
     }
     if (!auto || !isEqual(conn.netlist, netlist)) {
       await conn.jlctl.putNetlist(netlist)
     }
-    await syncFromDevice()
+    //await syncFromDevice()
+    setBusy(false)
   }
 
   async function syncFromDevice() {
     if (conn.jlctl === null) {
       throw new Error('Cannot sync, no device!')
     }
+    setBusy(true)
     await conn.poll()
     setSyncOnce(true)
   }
-
 
   useEffect(() => {
     if (syncOnce) {
       setNetlist(conn.netlist!)
       setSupplySwitchPos(conn.supplySwitchPos)
       setSyncOnce(false)
+      setBusy(false)
     }
   }, [syncOnce]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -206,7 +212,8 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
       syncAuto,
       setSyncAuto,
       addBridge,
-      disconnectNode
+      disconnectNode,
+      busy,
     }}>
       {children}
     </JumperlessStateContext.Provider>
