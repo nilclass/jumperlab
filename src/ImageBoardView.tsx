@@ -277,6 +277,79 @@ const NANO_NODES = {
   },
 }
 
+const SPECIAL_FUNCTIONS: { [key: string]: { width: number, height: number, x: number, y: number, rotate?: number } } = {
+  dac0: {
+    width: 207.44432,
+    height: 49.302864,
+    x: 2679.916,
+    y: 1079.9348,
+  },
+  dac1: {
+    width: 207.44432,
+    height: 49.302864,
+    x: 2679.916,
+    y: 1128.6094,
+  },
+  adc0: {
+    width: 207.4442,
+    height: 49.302864,
+    x: 2679.916,
+    y: 847.59515,
+  },
+  adc1: {
+    width: 207.44397,
+    height: 49.302864,
+    x: 2679.916,
+    y: 896.9187,
+  },
+  adc2: {
+    width: 207.44386,
+    height: 49.302864,
+    x: 2679.916,
+    y: 946.24225,
+  },
+  adc3: {
+    width: 207.44365,
+    height: 49.302864,
+    x: 2679.916,
+    y: 995.5658,
+  },
+  gpio0: {
+    width: 193.90086,
+    height: 127.49269,
+    x: 2693.4243,
+    y: 689.08044,
+  },
+  gpio18: {
+    width: 171.293,
+    height: 54.129276,
+    x: 629.73944,
+    y: 46.719563,
+    rotate: 45,
+  },
+  gpio19: {
+    width: 171.293,
+    height: 54.129276,
+    x: 630.74194,
+    y: 126.31828,
+    rotate: 45,
+  },
+  rx: {
+    width: 171.293,
+    height: 54.129276,
+    x: 626.43115,
+    y: -112.97909,
+    rotate: 45,
+  },
+  tx: {
+    width: 171.293,
+    height: 54.129276,
+    x: 628.93744,
+    y: -33.480652,
+    rotate: 45,
+  },
+}
+
 function makePath(points: Array<[number, number]>): string {
   const [x, y] = points[0]
   return `M${x} ${y}` + points.slice(1).map(([x, y]) => `L${x} ${y}`).join('')
@@ -457,6 +530,23 @@ const ImageBoardView: React.FC = () => {
     })
   }, [nodeColor])
 
+  const specialFunctions = useMemo(() => {
+    return Object.entries(SPECIAL_FUNCTIONS).map(([node, { x, y, width, height, rotate }]) => {
+      const transformProps = typeof rotate === 'number' ? { transform: `rotate(${rotate})` } : {}
+      return (
+        <rect
+          className='specialFunction'
+          key={node}
+          x={x}
+          y={y}
+          width={width}
+          height={height}
+          {...transformProps}
+        />
+      )
+    })
+  }, [])
+
   return (
     <div className="ImageBoardView" data-busy={busy}>
       <SelectionInfo />
@@ -475,6 +565,7 @@ const ImageBoardView: React.FC = () => {
           <g id="nanoHeader">{nanoPins}</g>
           <g id="rails">{rails}</g>
           <g id="Rows">{rows}</g>
+          <g id="specialFunctions">{specialFunctions}</g>
           <rect
             style={{
               opacity: 1,

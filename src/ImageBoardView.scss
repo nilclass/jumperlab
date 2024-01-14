@@ -69,6 +69,20 @@
     }
   }
 
+  .specialFunction {
+    opacity: 1;
+    fill: #f9f9f9;
+    fill-rule: evenodd;
+    stroke: #000;
+    stroke-width: 0.105827;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    &:hover {
+      fill: #fb8f8f;
+    }
+  }
+
   .rail {
     opacity: 1;
     fill: #fff;
