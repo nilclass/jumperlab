@@ -1,6 +1,7 @@
 .ImageBoardView {
   flex-grow: 1;
   position: relative;
+  background: #424949;
 
   &[data-busy="true"] {
     opacity: 0.8;
