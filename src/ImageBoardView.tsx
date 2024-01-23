@@ -23,6 +23,7 @@ import { netlistNodeNets } from "./netlist"
 import { CursorModeIndicator } from "./CursorModeIndicator"
 import { computeLayout } from "./ImageBoardView/connections"
 import { useSetting } from "./Settings"
+import { imagePath } from "./utils"
 
 const SWITCH_OPTS: Array<SupplySwitchPos> = [
   '8V',
@@ -610,7 +611,7 @@ const ImageBoardView: React.FC = () => {
             height={3242.8799}
             preserveAspectRatio="none"
             style={{ display: "inline", pointerEvents: 'none' }}
-            xlinkHref="/images/board-background.png"
+            xlinkHref={imagePath('board-background.png')}
             id="image1"
             x={0}
             y={-0.00001924485}

@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from 'react'
 import { StatusIcon } from '../components/StatusIcon'
 import { ConnectionContext } from '../connection'
 import { JumperlessStateContext } from '../JumperlessState'
+import { imagePath } from '../utils'
 
 const pollIntervalMs = 2000
 
@@ -24,8 +25,8 @@ export const ConnectionPanel: React.FC = () => {
     <div className='ConnectionPanel panel'>
       <div className='header'>
         <div className='title'>Connection</div>
-        <StatusIcon ok={reachable} src='/images/http-icon.svg' title='jlctl server reachable' />
-        <StatusIcon ok={ready} src='/images/board-icon.svg' title='connected to board' />
+        <StatusIcon ok={reachable} src={imagePath('http-icon.svg')} title='jlctl server reachable' />
+        <StatusIcon ok={ready} src={imagePath('board-icon.svg')} title='connected to board' />
       </div>
       <div className='content'>
         <button disabled={!ready || syncAuto} onClick={syncToDevice}>Sync to device ⇒</button>

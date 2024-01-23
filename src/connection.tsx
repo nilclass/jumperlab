@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useContext } from 'react'
 import { JlCtl, Bridge, Netlist, NotConnected, SupplySwitchPos, Status } from './jlctlapi'
 import './connection.css'
 import { StatusIcon } from './components/StatusIcon'
+import { imagePath } from './utils'
 
 export type ConnectionContextType = {
   // interface to the jlctl server
@@ -29,8 +30,8 @@ export const ConnectionWidget: React.FC<{ pollIntervalMs: number }> = ({ pollInt
   return (
     <div className='ConnectionWidget'>
       <strong>Connection status:</strong>
-      <StatusIcon ok={reachable} src='/images/http-icon.svg' title='jlctl server reachable' />
-      <StatusIcon ok={ready} src='/images/board-icon.svg' title='connected to board' />
+      <StatusIcon ok={reachable} src={imagePath('http-icon.svg')} title='jlctl server reachable' />
+      <StatusIcon ok={ready} src={imagePath('board-icon.svg')} title='connected to board' />
     </div>
   )
 }

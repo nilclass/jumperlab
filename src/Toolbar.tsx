@@ -5,6 +5,7 @@ import { SettingsDialog } from './Settings'
 import './Toolbar.css'
 import { InteractionContext } from './interaction'
 import { RadioGroup } from './components/RadioGroup'
+import { imagePath } from './utils'
 
 export const Toolbar: React.FC = () => {
   const { mode, handleSetMode } = useContext(InteractionContext)!
@@ -13,7 +14,7 @@ export const Toolbar: React.FC = () => {
   return (
     <div className='Toolbar'>
       <div className='logo'>
-        <img src='/images/logo.svg' alt='Jumperlab logo' />
+        <img src={imagePath('logo.svg')} alt='Jumperlab logo' />
         <h1>Jumperlab</h1>
       </div>
       <div>
