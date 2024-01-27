@@ -3,6 +3,7 @@ import { ConnectionContext } from './connection'
 import { JumperlessNode, Netlist, NetlistEntry, SupplySwitchPos } from './jlctlapi'
 import { netlistAddBridge, netlistDisconnectNode } from './netlist'
 import { isEqual } from 'lodash'
+import { errorToString } from './utils'
 
 type JumperlessStateContextType = {
   supplySwitchPos: SupplySwitchPos
@@ -18,6 +19,7 @@ type JumperlessStateContextType = {
   addBridge: (a: JumperlessNode, b: JumperlessNode) => void
   disconnectNode: (node: JumperlessNode) => void
   busy: boolean
+  syncError: string | null
 }
 
 type UpdateFn = (net: NetlistEntry) => NetlistEntry
@@ -36,6 +38,7 @@ const emptyState: JumperlessStateContextType = {
   addBridge() {},
   disconnectNode() {},
   busy: false,
+  syncError: null,
 }
 
 export const JumperlessStateContext = createContext<JumperlessStateContextType>(emptyState)
@@ -125,17 +128,22 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
   const [busy, setBusy] = useState(false)
   const [syncOnce, setSyncOnce] = useState(false)
   const [syncAuto, setSyncAuto] = useState(false)
+  const [syncError, setSyncError] = useState<string | null>(null)
 
   async function syncToDevice(auto?: boolean) {
     if (conn.jlctl === null) {
       throw new Error('Cannot sync, no device!')
     }
     setBusy(true)
-    if (!auto || (conn.supplySwitchPos !== supplySwitchPos)) {
-      await conn.jlctl.setSupplySwitchPos(supplySwitchPos)
-    }
-    if (!auto || !isEqual(conn.netlist, netlist)) {
-      await conn.jlctl.putNetlist(netlist)
+    try {
+      if (!auto || (conn.supplySwitchPos !== supplySwitchPos)) {
+        await conn.jlctl.setSupplySwitchPos(supplySwitchPos)
+      }
+      if (!auto || !isEqual(conn.netlist, netlist)) {
+        await conn.jlctl.putNetlist(netlist)
+      }
+    } catch (e) {
+      setSyncError(errorToString(e))
     }
     //await syncFromDevice()
     setBusy(false)
@@ -146,8 +154,12 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
       throw new Error('Cannot sync, no device!')
     }
     setBusy(true)
-    await conn.poll()
-    setSyncOnce(true)
+    try {
+      await conn.poll()
+      setSyncOnce(true)
+    } catch (e) {
+      setSyncError(errorToString(e))
+    }
   }
 
   useEffect(() => {
@@ -214,6 +226,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
       addBridge,
       disconnectNode,
       busy,
+      syncError,
     }}>
       {children}
     </JumperlessStateContext.Provider>

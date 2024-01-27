@@ -1,0 +1,20 @@
+.Alert {
+  padding: 4px 8px;
+  margin: 8px;
+  border-radius: 8px;
+  border-width: 1px;
+  border-style: solid;
+  font-weight: bold;
+
+  &.warning {
+    background: #F5C211cc;
+    color: #440;
+    border-color: #440;
+  }
+
+  &.error {
+    background: #F54211cc;
+    color: #421;
+    border-color: #421;
+  }
+}

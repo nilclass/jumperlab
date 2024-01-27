@@ -3,12 +3,13 @@ import { StatusIcon } from '../components/StatusIcon'
 import { ConnectionContext } from '../connection'
 import { JumperlessStateContext } from '../JumperlessState'
 import { imagePath } from '../utils'
+import { Alert } from '../components/Alert'
 
 const pollIntervalMs = 2000
 
 export const ConnectionPanel: React.FC = () => {
   const { reachable, ready, poll } = useContext(ConnectionContext)!
-  const { syncAuto, setSyncAuto, syncToDevice, syncFromDevice } = useContext(JumperlessStateContext)
+  const { syncAuto, setSyncAuto, syncToDevice, syncFromDevice, syncError } = useContext(JumperlessStateContext)
   const [busy, setBusy] = useState(false)
   
   useEffect(() => {
@@ -36,6 +37,8 @@ export const ConnectionPanel: React.FC = () => {
         </label>
         <br />
         <button disabled={!ready} onClick={syncFromDevice}>Sync from device ⇐</button>
+        {syncError && <Alert kind='error'>Sync failed: {syncError}</Alert>}
+        {syncAuto && !ready && <Alert kind='warning'>Not syncing: device not connected</Alert>}
       </div>
     </div>
   )
