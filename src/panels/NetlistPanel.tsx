@@ -25,7 +25,8 @@ export const NetlistPanel: React.FC = () => {
   }
 
   const handleColorChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    updateNet(index, net => ({ ...net, color: e.currentTarget.value }))
+    const color = e.currentTarget.value
+    updateNet(index, net => ({ ...net, color }))
   }
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
