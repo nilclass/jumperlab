@@ -43,15 +43,18 @@ export class JlCtl {
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl
+    if (this.baseUrl.slice(-1) !== '/') {
+      this.baseUrl += '/'
+    }
   }
 
   async getStatus(): Promise<Status> {
-    const response = await fetch(`${this.baseUrl}/status`)
+    const response = await fetch(this.buildUrl('status'))
     return await response.json() as Status
   }
 
   async getNetlist(): Promise<Array<NetlistEntry>> {
-    const response = await fetch(`${this.baseUrl}/nets`)
+    const response = await fetch(this.buildUrl('nets'))
     handle502(response)
     return await response.json() as Array<NetlistEntry>
   }
@@ -67,14 +70,18 @@ export class JlCtl {
   }
 
   async getSupplySwitchPos(): Promise<SupplySwitchPos> {
-    const response = await fetch(`${this.baseUrl}/supply_switch_pos`)
+    const response = await fetch(this.buildUrl('supply_switch_pos'))
     handle502(response)
     return await response.json() as SupplySwitchPos
   }
 
   async setSupplySwitchPos(pos: SupplySwitchPos): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/supply_switch_pos/${pos}`, { method: 'PUT' })
+    const response = await fetch(this.buildUrl(`supply_switch_pos/${pos}`), { method: 'PUT' })
     handle502(response)
+  }
+
+  buildUrl(path: string): string {
+    return `${this.baseUrl}${path}`
   }
 
   // async getBridges(): Promise<Array<Bridge>> {
