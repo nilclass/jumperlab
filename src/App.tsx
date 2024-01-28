@@ -12,7 +12,7 @@ import { Toolbar } from './Toolbar';
 const defaultJlctlUrl = 'http://localhost:8080'
 
 function App() {
-  const jlctlUrl = new URLSearchParams(document.location.search).get('jlctl') || defaultJlctlUrl
+  const jlctlUrl = new URLSearchParams(document.location.search).get('jlctl') || process.env.REACT_APP_JLCTL_URL || defaultJlctlUrl
 
   return (
     // Provides UI settings
