@@ -21,3 +21,7 @@ h1 {
   gap: 16px;
   align-items: center;
 }
+
+.Toolbar > .build-info {
+  align-self: center;
+}
