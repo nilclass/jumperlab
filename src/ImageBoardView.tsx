@@ -537,14 +537,15 @@ const ImageBoardView: React.FC = () => {
   }, [netlist, highlightedNet, nodeColor])
 
   const nanoPins = useMemo(() => {
-    return Object.entries(NANO_NODES).map(([node, { x, y, width, height }]) => {
+    return Object.entries(NANO_NODES).map(([nanoNode, { x, y, width, height }]) => {
+      const node = nanoNodeToNode(nanoNode)
       const color = nodeColor(node)
       const style: React.CSSProperties = {}
       if (color) {
         style.fill = color
       }
-      const id = `nano-${node}`
-      return <rect key={node} className='nanoPin' id={id} data-node={nanoNodeToNode(node)} x={x} y={y} width={width} height={height} ry={0.37795275} style={style} />
+      const id = `nano-${nanoNode}`
+      return <rect key={nanoNode} className='nanoPin' id={id} data-node={node} x={x} y={y} width={width} height={height} ry={0.37795275} style={style} />
     })
   }, [nodeColor])
 
