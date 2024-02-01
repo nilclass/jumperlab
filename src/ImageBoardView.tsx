@@ -278,6 +278,23 @@ const NANO_NODES = {
   },
 }
 
+function nanoNodeToNode(nanoNode: string): string {
+  switch (nanoNode) {
+    case 'ngnd0':
+    case 'ngnd1':
+      return 'GND'
+    case 'RST0':
+    case 'RST1':
+      return 'RESET'
+    case 'n3v3':
+      return 'SUPPLY_3V3'
+    case 'n5v':
+      return 'SUPPLY_5V'
+    default:
+      return nanoNode
+  }
+}
+
 const SPECIAL_FUNCTIONS: { [key: string]: { width: number, height: number, x: number, y: number, rotate?: number } } = {
   dac0: {
     width: 207.44432,
@@ -527,7 +544,7 @@ const ImageBoardView: React.FC = () => {
         style.fill = color
       }
       const id = `nano-${node}`
-      return <rect key={node} className='nanoPin' id={id} data-node={node} x={x} y={y} width={width} height={height} ry={0.37795275} style={style} />
+      return <rect key={node} className='nanoPin' id={id} data-node={nanoNodeToNode(node)} x={x} y={y} width={width} height={height} ry={0.37795275} style={style} />
     })
   }, [nodeColor])
 
