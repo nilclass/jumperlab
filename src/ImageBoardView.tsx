@@ -87,10 +87,10 @@ function railNode(rail: string, supplySwitchPos: SupplySwitchPos): JumperlessNod
     return 'GND'
   }
   if (supplySwitchPos === '3.3V') {
-    return '3V3'
+    return 'SUPPLY_3V3'
   }
   if (supplySwitchPos === '5V') {
-    return '5V'
+    return 'SUPPLY_5V'
   }
   return null
 }
@@ -454,6 +454,10 @@ const ImageBoardView: React.FC = () => {
       const style: React.CSSProperties = {}
       if (color) {
         style.fill = color
+      } else if (id === 'tPos'){
+        style.fill = "#faa000"
+      } else if (id === 'bPos') {
+        style.fill = "#8020fa"
       }
       return (
         <rect className='rail' key={id} id={id} width={2514.6069} height={85.783966} x={x} y={y} ry={0.31750244} style={style} data-node={node} />
