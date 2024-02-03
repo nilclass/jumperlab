@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useRef, useState, useCallback } from "react"
 import { JumperlessStateContext } from './JumperlessState'
-import { breadboardNode, JumperlessNode, makeNode, NetlistEntry, SupplySwitchPos } from "./jlctlapi"
+import { breadboardNode, JumperlessNode, validateNode, NetlistEntry, SupplySwitchPos } from "./jlctlapi"
 import {
   useFloating,
   autoUpdate,
@@ -411,7 +411,7 @@ const ImageBoardView: React.FC = () => {
     const node = element.dataset.node
 
     if (node) {
-      return makeNode(node)
+      return validateNode(node)
     }
     return null
   }

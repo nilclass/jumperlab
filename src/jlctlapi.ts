@@ -86,10 +86,10 @@ export function specialNode (name: string): SpecialNode {
 }
 
 export function makeBridge(a: string, b: string): Bridge {
-  return [makeNode(a), makeNode(b)]
+  return [validateNode(a), validateNode(b)]
 }
 
-export function makeNode(id: string): JumperlessNode {
+export function validateNode(id: string): JumperlessNode {
   if (id.match(/^\d+$/)) {
     return breadboardNode(parseInt(id, 10))
   } else {
