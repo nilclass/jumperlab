@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useRef, useState, useCallback } from "react"
 import { JumperlessStateContext } from './JumperlessState'
-import { JumperlessNode, NetlistEntry, SupplySwitchPos } from "./jlctlapi"
+import { breadboardNode, JumperlessNode, makeNode, NetlistEntry, SupplySwitchPos } from "./jlctlapi"
 import {
   useFloating,
   autoUpdate,
@@ -95,180 +95,209 @@ function railNode(rail: string, supplySwitchPos: SupplySwitchPos): JumperlessNod
   return null
 }
 
-const NANO_NODES = {
+const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y: number, node?: JumperlessNode } } = {
   "D12": {
     width: 81.971809,
     height: 256.60733,
     x: 988.57129,
     y: 367.09097,
+    node: 'NANO_D12',
   },
   "D11": {
     width: 76.847221,
     height: 256.61069,
     x: 1072.5413,
     y: 367.08929,
+    node: 'NANO_D11',
   },
   "D10": {
     width: 80.893265,
     height: 256.60803,
     x: 1151.3864,
     y: 367.09061,
+    node: 'NANO_D10',
   },
   "D9": {
     width: 72.591599,
     height: 256.61356,
     x: 1234.9969,
     y: 367.08783,
+    node: 'NANO_D9',
   },
   "D8": {
     width: 76.227379,
     height: 256.61111,
     x: 1312.9922,
     y: 367.08908,
+    node: 'NANO_D8',
   },
   "D7": {
     width: 78.049431,
     height: 256.60989,
     x: 1392.625,
     y: 367.08969,
+    node: 'NANO_D7',
   },
   "D6": {
     width: 76.227379,
     height: 256.61111,
     x: 1474.8103,
     y: 367.08908,
+    node: 'NANO_D6',
   },
   "D5": {
     width: 76.227379,
     height: 256.61111,
     x: 1555.173,
     y: 367.08908,
+    node: 'NANO_D5',
   },
   "D4": {
     width: 76.227379,
     height: 256.61111,
     x: 1633.5356,
     y: 367.08908,
+    node: 'NANO_D4',
   },
   "D3": {
     width: 76.227379,
     height: 256.61111,
     x: 1711.8983,
     y: 367.08908,
+    node: 'NANO_D3',
   },
   "D2": {
     width: 76.227379,
     height: 256.61111,
     x: 1790.261,
     y: 367.08908,
+    node: 'NANO_D2',
   },
   "ngnd0": {
     width: 84.595268,
     height: 256.60565,
     x: 1868.7933,
     y: 367.0918,
+    node: 'GND',
   },
   "RST1": {
     width: 76.227379,
     height: 256.61111,
     x: 1955.6936,
     y: 367.08905,
+    node: 'NANO_RESET',
   },
   "D0": {
     width: 76.227379,
     height: 256.61111,
     x: 2034.2233,
     y: 367.08905,
+    node: 'NANO_D0',
   },
   "D1": {
     width: 76.227379,
     height: 256.61111,
     x: 2112.7529,
     y: 367.08905,
+    node: 'NANO_D1',
   },
   "D13": {
     width: 78.98185,
     height: 256.60928,
     x: 988.57031,
     y: 952.03479,
+    node: 'NANO_D13',
   },
   "n3v3": {
     width: 79.837097,
     height: 256.6087,
     x: 1069.5504,
     y: 952.0351,
+    node: 'SUPPLY_3V3',
   },
   "AREF": {
     width: 86.024788,
     height: 256.60474,
     x: 1151.3879,
     y: 952.03705,
+    node: 'NANO_AREF',
   },
   "A0": {
     width: 68.180794,
     height: 256.61664,
     x: 1239.4093,
     y: 952.03113,
+    node: 'NANO_A0',
   },
   "A1": {
     width: 76.227379,
     height: 256.61111,
     x: 1312.9922,
     y: 952.03387,
+    node: 'NANO_A0',
   },
   "A2": {
     width: 78.049431,
     height: 256.60989,
     x: 1392.625,
     y: 952.03448,
+    node: 'NANO_A2',
   },
   "A3": {
     width: 76.227379,
     height: 256.61111,
     x: 1474.8103,
     y: 952.03387,
+    node: 'NANO_A3',
   },
   "A4": {
     width: 76.227379,
     height: 256.61111,
     x: 1555.173,
     y: 952.03387,
+    node: 'NANO_A4',
   },
   "A5": {
     width: 76.227379,
     height: 256.61111,
     x: 1633.5355,
     y: 952.03387,
+    node: 'NANO_A5',
   },
   "A6": {
     width: 76.227379,
     height: 256.61111,
     x: 1711.8983,
     y: 952.03387,
+    node: 'NANO_A6',
   },
   "A7": {
     width: 76.227379,
     height: 256.61111,
     x: 1790.2609,
     y: 952.03387,
+    node: 'NANO_A7',
   },
   "n5v": {
     width: 84.595268,
     height: 256.60565,
     x: 1868.7933,
     y: 952.03662,
+    node: 'SUPPLY_5V',
   },
   "RST0": {
     width: 70.018097,
     height: 256.61536,
     x: 1955.6914,
     y: 952.03174,
+    node: 'NANO_RESET',
   },
   "ngnd1": {
     width: 82.436722,
     height: 256.60703,
     x: 2028.0118,
     y: 952.03589,
+    node: 'GND',
   },
   "VIN": {
     width: 76.227379,
@@ -276,23 +305,6 @@ const NANO_NODES = {
     x: 2112.7529,
     y: 952.03387,
   },
-}
-
-function nanoNodeToNode(nanoNode: string): string {
-  switch (nanoNode) {
-    case 'ngnd0':
-    case 'ngnd1':
-      return 'GND'
-    case 'RST0':
-    case 'RST1':
-      return 'RESET'
-    case 'n3v3':
-      return 'SUPPLY_3V3'
-    case 'n5v':
-      return 'SUPPLY_5V'
-    default:
-      return nanoNode
-  }
 }
 
 const SPECIAL_FUNCTIONS: { [key: string]: { width: number, height: number, x: number, y: number, rotate?: number } } = {
@@ -399,10 +411,7 @@ const ImageBoardView: React.FC = () => {
     const node = element.dataset.node
 
     if (node) {
-      if (/^\d+$/.test(node)) {
-        return parseInt(node, 10)
-      }
-      return node
+      return makeNode(node)
     }
     return null
   }
@@ -426,7 +435,7 @@ const ImageBoardView: React.FC = () => {
 
   const rows = ROW_POSITIONS.map(([x, y], i) => {
     const row = i + 1
-    const fill = nodeColor(row)
+    const fill = nodeColor(breadboardNode(row))
     const style: React.CSSProperties = {}
     if (fill) {
       style.fill = fill
@@ -541,9 +550,8 @@ const ImageBoardView: React.FC = () => {
   }, [netlist, highlightedNet, nodeColor])
 
   const nanoPins = useMemo(() => {
-    return Object.entries(NANO_NODES).map(([nanoNode, { x, y, width, height }]) => {
-      const node = nanoNodeToNode(nanoNode)
-      const color = nodeColor(node)
+    return Object.entries(NANO_NODES).map(([nanoNode, { x, y, width, height, node }]) => {
+      const color = node ? nodeColor(node) : null
       const style: React.CSSProperties = {}
       if (color) {
         style.fill = color

@@ -1,4 +1,4 @@
-import { JumperlessNode, Netlist } from '../jlctlapi'
+import { BreadboardNode, Netlist } from '../jlctlapi'
 
 type Connection = {
   a: ConnectionSpot
@@ -6,13 +6,14 @@ type Connection = {
   netIndex: number
 }
 
-type Row = JumperlessNode & number
+type Row = BreadboardNode
 
 type ConnectionSpot = {
   node: Row
   index: number
 }
 
+// Exclusive range of rows (does not `contain` given endpoints)
 type RowRange = [Row, Row]
 
 type OccupiedRanges = Array<Array<RowRange>>
@@ -42,8 +43,8 @@ export function computeLayout(netlist: Netlist): Array<Connection> {
       continue
     }
 
-    const rowsTop = []
-    const rowsBottom = []
+    const rowsTop: Array<Row> = []
+    const rowsBottom: Array<Row> = []
     for (const node of net.nodes) {
       if (typeof node === 'number') {
         if (node <= 30) {

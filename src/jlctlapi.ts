@@ -1,5 +1,58 @@
 
-export type JumperlessNode = string | number
+
+export type BreadboardNode = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+  11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 |
+  21 | 22 | 23 | 24 | 25 | 26 | 27 | 28 | 29 | 30 |
+  31 | 32 | 33 | 34 | 35 | 36 | 37 | 38 | 39 | 40 |
+  41 | 42 | 43 | 44 | 45 | 46 | 47 | 48 | 49 | 50 |
+  51 | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59 | 60
+
+const specialNodes = {
+  GND: true,
+  SUPPLY_3V3: true,
+  SUPPLY_5V: true,
+  DAC0: true,
+  DAC1: true,
+  ISENSE_PLUS: true,
+  ISENSE_MINUS: true,
+  ADC0: true,
+  ADC1: true,
+  ADC2: true,
+  ADC3: true,
+  RP_GPIO_0: true,
+  RP_UART_TX: true,
+  RP_GPIO_16: true,
+  RP_UART_RX: true,
+  RP_GPIO_17: true,
+  NANO_D0: true,
+  NANO_D1: true,
+  NANO_D2: true,
+  NANO_D3: true,
+  NANO_D4: true,
+  NANO_D5: true,
+  NANO_D6: true,
+  NANO_D7: true,
+  NANO_D8: true,
+  NANO_D9: true,
+  NANO_D10: true,
+  NANO_D11: true,
+  NANO_D12: true,
+  NANO_D13: true,
+  NANO_RESET: true,
+  NANO_AREF: true,
+  NANO_A0: true,
+  NANO_A1: true,
+  NANO_A2: true,
+  NANO_A3: true,
+  NANO_A4: true,
+  NANO_A5: true,
+  NANO_A6: true,
+  NANO_A7: true,
+}
+
+export type SpecialNode = keyof typeof specialNodes
+export type JumperlessNode = BreadboardNode | SpecialNode
+
 export type Bridge = [JumperlessNode, JumperlessNode]
 export type NetlistEntry = {
   index: number
@@ -18,15 +71,29 @@ export type Status = {
   connected: boolean
 }
 
+export function breadboardNode (n: number): BreadboardNode {
+  if (n < 1 && n > 60) {
+    throw new Error(`Invalid breadboard node: ${n}`)
+  }
+  return n as BreadboardNode
+}
+
+export function specialNode (name: string): SpecialNode {
+  if (!(name in specialNodes)) {
+    throw new Error(`Invalid special node: ${JSON.stringify(name)}`)
+  }
+  return name as SpecialNode
+}
+
 export function makeBridge(a: string, b: string): Bridge {
   return [makeNode(a), makeNode(b)]
 }
 
 export function makeNode(id: string): JumperlessNode {
   if (id.match(/^\d+$/)) {
-    return parseInt(id, 10) as JumperlessNode
+    return breadboardNode(parseInt(id, 10))
   } else {
-    return id as JumperlessNode
+    return specialNode(id)
   }
 }
 
