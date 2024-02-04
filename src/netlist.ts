@@ -85,7 +85,7 @@ export function netlistNetForNode(netlist: Netlist, node: JumperlessNode): Netli
   return netlist.find(net => net.nodes.includes(node)) || null
 }
 
-function randomColor() {
+export function randomColor() {
   let setRandomChanneltoZero = Math.floor(Math.random() * 3) //this picks a random channel to (not quite) zero out, so we get more saturated colors
 
   let max = 0
