@@ -4,9 +4,11 @@
   align-items: center;
 
   overflow: auto;
+  background-color: #424949;
 }
 
 .BoardView > .viewarea {
+  place-self: start;
   position: relative;
 }
 
@@ -18,12 +20,13 @@
 
 .BoardView > .viewarea > .boardrect {
   position: absolute;
-  opacity: 0.5;
+  opacity: 0.9;
   transform-origin: 0 0;
 }
 
 .BoardView[data-adjust="true"] > .viewarea > .boardrect {
-  background: blue;
+  background: rgba(246, 14, 157, 0.2);
+  
 }
 
 .BoardView[data-mode="blank"] > .viewarea > .boardrect {

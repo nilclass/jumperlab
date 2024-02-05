@@ -3,10 +3,10 @@ import React, { useState, useEffect } from 'react'
 export type Rect = Array<[number, number]>
 
 export const defaultRect: Rect = [
-  [50, 50],
-  [150, 50],
-  [50, 150],
-  [150, 150],
+  [285, 465],
+  [1065,465],
+  [285, 950],
+  [1065, 950],
 ]
 
 export const AdjustRect: React.FC<{ rect: Rect, onRectChange: (r: Rect) => void }> = ({ rect, onRectChange }) => {
@@ -164,8 +164,8 @@ export function rectStyle(rect: Rect): React.CSSProperties {
   const [p0, p1, p2, p3] = rect
   return {
     width: 331,
-    height: 189,
-    transform: transform2d(331, 189, ...p0, ...p1, ...p2, ...p3)
+    height: 200,
+    transform: transform2d(331, 200, ...p0, ...p1, ...p2, ...p3)
   }
 }
 
