@@ -2,6 +2,7 @@
   
   .segment {
     border: solid 1px black;
+    
     box-sizing: border-box;
   }
 
@@ -21,16 +22,16 @@
   }
 
   .MainBlock + .PowerRow {
-    margin-top: 14px;
+    margin-top: 18px;
   }
 
   .PowerRow + .MainBlock {
-    margin-top: 14px;
+    margin-top: 18px;
   }
 
   .Board {
-    width: 331px;
-    height: 189px;
+    width: 660px;
+    height: 400px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -43,7 +44,7 @@
   }
 
   .Segment.selected {
-    outline: solid 1px red;
+    outline: solid 2px rgb(255, 9, 157);
   }
 
   .Segment.highlight {
@@ -56,18 +57,26 @@
     position: absolute;
     background: black;
     color: white;
-    border-radius: 8px;
-    font-size: 10px;
+    border-radius: 10px;
+    font-size: 12px;
     font-weight: bold;
     display: none;
+    text-align: center;
   }
 
   .Segment.label-pos-top > .label {
-    top: -12px;
+    top: -15px;
+    left: -2px;
+  }
+
+  .Segment.label-pos-top-one-digit > .label { //this keeps the single digit labels from being off center, there is probably a better way to do this
+    top: -15px;
+    left: 1px;
   }
 
   .Segment.label-pos-bottom > .label {
-    bottom: -12px;
+    bottom: -15px;
+    left: -2px;
   }
 
   .Segment:hover > .label {
@@ -86,13 +95,13 @@
     width: 8px;
     height: 8px;
     margin: 1px;
-    border-style: groove;
-    border-width: 3px;
-    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0.399);
     box-sizing: border-box;
   }
 
   .pin:hover {
-    border-color: #fc7;
+    border-color: rgb(255, 237, 119);
   }
 }

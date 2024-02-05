@@ -87,7 +87,7 @@ export const BoardView: React.FC = () => {
   // Four corners of the board in view coordinates (relative to `.viewarea`)
   const viewRect = useMemo<Rect>(() => boardRect.map(([x, y]) => [areaSize[0] * x / bgSize[0], areaSize[1] * y / bgSize[1]]), [boardRect, areaSize, bgSize])
 
-  const [scale, setScale] = useSetting<number>('boardViewScale', 1)
+  const [scale, setScale] = useSetting<number>('boardViewScale', 2)
 
   // Applies 3D transform placing the board at the right position on the camera feed
   const boardRectStyle = useMemo(() => mode === 'blank' ? { ...blankStyle, scale: scale.toString() } : rectStyle(viewRect), [viewRect, mode, scale])
@@ -192,7 +192,7 @@ export const BoardView: React.FC = () => {
 
   return (
     <div className='BoardView' ref={ref} data-adjust={adjust} data-pin-overlay={pinOverlay} data-mode={mode}>
-      <div className='viewarea' style={mode === 'blank' ? {} : { width: areaSize[0], height: areaSize[1] }}>
+      <div className='viewarea' style={mode === 'blank' ? {} : { width: areaSize[0], height: areaSize[1]}}>
         {mode === 'camera'
         ? <CameraLayer onSizeChange={setBgSize} deviceId={currentCam!} />
         : mode === 'blank'
@@ -246,6 +246,13 @@ const BlankLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> =
 *   return <img src="images/default-board-pic.jpg" onLoad={handleLoad} />
 * } */
 
+const constraints = {
+  height: { min: 180, ideal: 2400 },
+  width: { min: 180, ideal: 2400 },
+  //resizeMode: 'crop-and-scale',
+  advanced: [ { aspectRatio: 1.33}],
+};
+
 const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void, deviceId: string }> = ({ onSizeChange, deviceId }) => {
   const ref = useRef<HTMLVideoElement>(null)
 
@@ -254,6 +261,7 @@ const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void, de
       stream => {
         const video = ref.current!
         const track = stream.getVideoTracks()[0]
+        track.applyConstraints(constraints)
         const settings = track.getSettings()
         video.srcObject = stream
         onSizeChange([settings.width!, settings.height!])
