@@ -6,6 +6,7 @@ import './Toolbar.css'
 import { InteractionContext } from './interaction'
 import { RadioGroup } from './components/RadioGroup'
 import { imagePath } from './utils'
+import { ChipStatusDialog } from './ChipStatus'
 
 const buildInfo = process.env.REACT_APP_BUILD_INFO
 
@@ -28,6 +29,9 @@ export const Toolbar: React.FC = () => {
       </div>
       <BoardViewModeSelect />
       {buildInfo && <div className='build-info'><strong>Build: </strong><code>{buildInfo}</code></div>}
+      <button onClick={(e) => openDialog(<ChipStatusDialog />, e)}>
+        Chip Status
+      </button>
       <button className='with-icon' onClick={(e) => openDialog(<SettingsDialog />, e)}>
         <div className='icon'>⚙</div>
         Settings
