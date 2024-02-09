@@ -71,6 +71,12 @@ export type Status = {
   connected: boolean
 }
 
+export type ChipStatus = {
+  char: string
+  xStatus: [number, number, number, number, number, number, number, number, number, number, number, number, number, number, number, number]
+  yStatus: [number, number, number, number, number, number, number, number]
+}
+
 export function breadboardNode (n: number): BreadboardNode {
   if (n < 1 && n > 60) {
     throw new Error(`Invalid breadboard node: ${n}`)
@@ -145,6 +151,18 @@ export class JlCtl {
   async setSupplySwitchPos(pos: SupplySwitchPos): Promise<void> {
     const response = await fetch(this.buildUrl(`supply_switch_pos/${pos}`), { method: 'PUT' })
     handle502(response)
+  }
+
+  async getChipStatus(): Promise<Array<ChipStatus>> {
+    const response = await fetch(this.buildUrl('chip_status'))
+    handle502(response)
+    const result = await response.json();
+    console.log('chip status', result)
+    return result.map(({ char, x_status, y_status }: { char: ChipStatus['char'], x_status: ChipStatus['xStatus'], y_status: ChipStatus['yStatus'] }) => ({
+      char,
+      xStatus: x_status,
+      yStatus: y_status,
+    }))
   }
 
   buildUrl(path: string): string {

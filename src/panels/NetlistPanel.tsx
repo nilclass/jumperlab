@@ -2,6 +2,7 @@ import React, { useContext, useState } from 'react'
 import { InteractionContext } from '../interaction'
 import { NetlistEntry } from '../jlctlapi'
 import { JumperlessStateContext } from '../JumperlessState'
+import { randomColor } from '../netlist'
 import { NodeRef } from '../NodeRef'
 import './NetlistPanel.scss'
 
@@ -29,6 +30,11 @@ export const NetlistPanel: React.FC = () => {
     updateNet(index, net => ({ ...net, color }))
   }
 
+  const handleRandomizeColor = (index: number) => {
+    const color = randomColor()
+    updateNet(index, net => ({ ...net, color }))
+  }
+
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault()
@@ -50,7 +56,10 @@ export const NetlistPanel: React.FC = () => {
                 {editing === net.index ? <input type='text' defaultValue={net.name} onBlur={handleBlur} onKeyPress={handleKeyPress} autoFocus size={net.name.length + 1} />: net.name}
                 {!isSpecial(net) && editing !== net.index && <button className='icon' title='Edit' onClick={() => handleEdit(net.index)}>🖉</button>}
               </div>
-              <div className='color'><input type="color" value={net.color} onChange={e => handleColorChange(net.index, e)} /></div>
+              <div className='color'>
+                <button onClick={() => handleRandomizeColor(net.index)} title="Choose new (random) color for this net">🎲</button>
+                <input type="color" value={net.color} onChange={e => handleColorChange(net.index, e)} title="Set color for this net" />
+              </div>
             </div>
             <div className='nodes'>
               {net.nodes.map(node => <NodeRef key={node} node={node} selected={selectedNode === node} highlighted={highlightedNode === node} onHover={setHighlightedNode} onClick={handleNodeClick} />)}

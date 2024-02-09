@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useRef, useState, useCallback } from "react"
 import { JumperlessStateContext } from './JumperlessState'
-import { breadboardNode, JumperlessNode, validateNode, NetlistEntry, SupplySwitchPos } from "./jlctlapi"
+import { breadboardNode, JumperlessNode, validateNode, NetlistEntry, SupplySwitchPos, SpecialNode } from "./jlctlapi"
 import {
   useFloating,
   autoUpdate,
@@ -21,7 +21,7 @@ import { InteractionContext } from "./interaction"
 import { SelectionInfo } from "./SelectionInfo"
 import { netlistNodeNets } from "./netlist"
 import { CursorModeIndicator } from "./CursorModeIndicator"
-import { computeLayout } from "./ImageBoardView/connections"
+import { computeLayout, computeNanoLayout } from "./ImageBoardView/connections"
 import { useSetting } from "./Settings"
 import { imagePath } from "./utils"
 
@@ -75,6 +75,10 @@ function holePosBottom(row: JumperlessNode & number, index: number): [number, nu
   return [x, y + ROW_HEIGHT - ROW_INDEX_OFFSETS[index]]
 }
 
+function holePos(row: JumperlessNode & number, index: number): [number, number] {
+  return row > 30 ? holePosBottom(row, index) : holePosTop(row, index)
+}
+
 const RAIL_POS = {
   tPos: [347.19583, 1278.9934],
   tNeg: [347.19583, 1364.8767],
@@ -95,13 +99,17 @@ function railNode(rail: string, supplySwitchPos: SupplySwitchPos): JumperlessNod
   return null
 }
 
-const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y: number, node?: JumperlessNode } } = {
+const nanoCenterTop: [number, number] = [42, 175]
+const nanoCenterBottom: [number, number] = [33, 75]
+
+const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y: number, center?: [number, number], node?: JumperlessNode } } = {
   "D12": {
     width: 81.971809,
     height: 256.60733,
     x: 988.57129,
     y: 367.09097,
     node: 'NANO_D12',
+    center: nanoCenterTop,
   },
   "D11": {
     width: 76.847221,
@@ -109,6 +117,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1072.5413,
     y: 367.08929,
     node: 'NANO_D11',
+    center: nanoCenterTop,
   },
   "D10": {
     width: 80.893265,
@@ -116,6 +125,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1151.3864,
     y: 367.09061,
     node: 'NANO_D10',
+    center: nanoCenterTop,
   },
   "D9": {
     width: 72.591599,
@@ -123,6 +133,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1234.9969,
     y: 367.08783,
     node: 'NANO_D9',
+    center: nanoCenterTop,
   },
   "D8": {
     width: 76.227379,
@@ -130,6 +141,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1312.9922,
     y: 367.08908,
     node: 'NANO_D8',
+    center: nanoCenterTop,
   },
   "D7": {
     width: 78.049431,
@@ -137,6 +149,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1392.625,
     y: 367.08969,
     node: 'NANO_D7',
+    center: nanoCenterTop,
   },
   "D6": {
     width: 76.227379,
@@ -144,6 +157,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1474.8103,
     y: 367.08908,
     node: 'NANO_D6',
+    center: nanoCenterTop,
   },
   "D5": {
     width: 76.227379,
@@ -151,6 +165,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1555.173,
     y: 367.08908,
     node: 'NANO_D5',
+    center: nanoCenterTop,
   },
   "D4": {
     width: 76.227379,
@@ -158,6 +173,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1633.5356,
     y: 367.08908,
     node: 'NANO_D4',
+    center: nanoCenterTop,
   },
   "D3": {
     width: 76.227379,
@@ -165,6 +181,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1711.8983,
     y: 367.08908,
     node: 'NANO_D3',
+    center: nanoCenterTop,
   },
   "D2": {
     width: 76.227379,
@@ -172,6 +189,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1790.261,
     y: 367.08908,
     node: 'NANO_D2',
+    center: nanoCenterTop,
   },
   "ngnd0": {
     width: 84.595268,
@@ -179,6 +197,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1868.7933,
     y: 367.0918,
     node: 'GND',
+    center: nanoCenterTop,
   },
   "RST1": {
     width: 76.227379,
@@ -186,6 +205,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1955.6936,
     y: 367.08905,
     node: 'NANO_RESET',
+    center: nanoCenterTop,
   },
   "D0": {
     width: 76.227379,
@@ -193,6 +213,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 2034.2233,
     y: 367.08905,
     node: 'NANO_D0',
+    center: nanoCenterTop,
   },
   "D1": {
     width: 76.227379,
@@ -200,6 +221,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 2112.7529,
     y: 367.08905,
     node: 'NANO_D1',
+    center: nanoCenterTop,
   },
   "D13": {
     width: 78.98185,
@@ -207,6 +229,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 988.57031,
     y: 952.03479,
     node: 'NANO_D13',
+    center: nanoCenterBottom,
   },
   "n3v3": {
     width: 79.837097,
@@ -214,6 +237,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1069.5504,
     y: 952.0351,
     node: 'SUPPLY_3V3',
+    center: nanoCenterBottom,
   },
   "AREF": {
     width: 86.024788,
@@ -221,6 +245,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1151.3879,
     y: 952.03705,
     node: 'NANO_AREF',
+    center: nanoCenterBottom,
   },
   "A0": {
     width: 68.180794,
@@ -228,13 +253,15 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1239.4093,
     y: 952.03113,
     node: 'NANO_A0',
+    center: nanoCenterBottom,
   },
   "A1": {
     width: 76.227379,
     height: 256.61111,
     x: 1312.9922,
     y: 952.03387,
-    node: 'NANO_A0',
+    node: 'NANO_A1',
+    center: nanoCenterBottom,
   },
   "A2": {
     width: 78.049431,
@@ -242,6 +269,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1392.625,
     y: 952.03448,
     node: 'NANO_A2',
+    center: nanoCenterBottom,
   },
   "A3": {
     width: 76.227379,
@@ -249,6 +277,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1474.8103,
     y: 952.03387,
     node: 'NANO_A3',
+    center: nanoCenterBottom,
   },
   "A4": {
     width: 76.227379,
@@ -256,6 +285,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1555.173,
     y: 952.03387,
     node: 'NANO_A4',
+    center: nanoCenterBottom,
   },
   "A5": {
     width: 76.227379,
@@ -263,6 +293,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1633.5355,
     y: 952.03387,
     node: 'NANO_A5',
+    center: nanoCenterBottom,
   },
   "A6": {
     width: 76.227379,
@@ -270,6 +301,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1711.8983,
     y: 952.03387,
     node: 'NANO_A6',
+    center: nanoCenterBottom,
   },
   "A7": {
     width: 76.227379,
@@ -277,6 +309,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1790.2609,
     y: 952.03387,
     node: 'NANO_A7',
+    center: nanoCenterBottom,
   },
   "n5v": {
     width: 84.595268,
@@ -284,6 +317,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1868.7933,
     y: 952.03662,
     node: 'SUPPLY_5V',
+    center: nanoCenterBottom,
   },
   "RST0": {
     width: 70.018097,
@@ -291,6 +325,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 1955.6914,
     y: 952.03174,
     node: 'NANO_RESET',
+    center: nanoCenterBottom,
   },
   "ngnd1": {
     width: 82.436722,
@@ -298,13 +333,25 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
     x: 2028.0118,
     y: 952.03589,
     node: 'GND',
+    center: nanoCenterBottom,
   },
   "VIN": {
     width: 76.227379,
     height: 256.61111,
     x: 2112.7529,
     y: 952.03387,
+    center: nanoCenterBottom,
   },
+}
+
+function nanoPos (node: SpecialNode): [number, number] {
+  for (const nanoNode of Object.values(NANO_NODES)) {
+    if (nanoNode.node === node) {
+      const center = nanoNode.center || [0, 0]
+      return [nanoNode.x + center[0], nanoNode.y + center[1]]
+    }
+  }
+  throw new Error(`BUG: nano node position not found for ${node}`)
 }
 
 const SPECIAL_FUNCTIONS: { [key: string]: { width: number, height: number, x: number, y: number, rotate?: number } } = {
@@ -561,6 +608,21 @@ const ImageBoardView: React.FC = () => {
     })
   }, [nodeColor])
 
+  const nanoConnections = useMemo(() => {
+    return computeNanoLayout(netlist).map(({ netIndex, a, b }) => {
+      const aPos = typeof a.node === 'number' ? holePos(a.node, 0) : nanoPos(a.node)
+      const bPos = typeof b.node === 'number' ? holePos(b.node, 0) : nanoPos(b.node)
+      const d = makePath([aPos, bPos])
+      const style = {
+        stroke: nodeColor(a.node)!,
+        strokeWidth: netIndex === highlightedNet ? 16 : 8,
+        fill: 'none',
+      }
+      const id = `${a.node}-${b.node}`
+      return <path className='connection' key={id} id={id} style={style} d = {d} />
+    })
+  }, [netlist, highlightedNet, nodeColor])
+
   const specialFunctions = useMemo(() => {
     return Object.entries(SPECIAL_FUNCTIONS).map(([node, { x, y, width, height, rotate }]) => {
       const transformProps = typeof rotate === 'number' ? { transform: `rotate(${rotate})` } : {}
@@ -647,6 +709,7 @@ const ImageBoardView: React.FC = () => {
             y={-0.00001924485}
           />
           <g className="connections">{connections}</g>
+          <g className="nanoConnections">{nanoConnections}</g>
           <g className="specialMarkers">{specialMarkers}</g>
         </g>
       </svg>

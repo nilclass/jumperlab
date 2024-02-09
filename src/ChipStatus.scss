@@ -1,0 +1,12 @@
+.ChipStatusTable {
+  border-collapse: collapse;
+
+  > tbody, > thead {
+    > tr {
+      > th, > td {
+        border: solid 1px black;
+        padding: 4px;
+      }
+    }
+  }
+}
