@@ -41,6 +41,7 @@
     display: flex;
     position: relative;
     box-sizing: border-box;
+    align-items: center;
   }
 
   .Segment.selected {
@@ -66,17 +67,10 @@
 
   .Segment.label-pos-top > .label {
     top: -15px;
-    left: -2px;
-  }
-
-  .Segment.label-pos-top-one-digit > .label { //this keeps the single digit labels from being off center, there is probably a better way to do this
-    top: -15px;
-    left: 1px;
   }
 
   .Segment.label-pos-bottom > .label {
     bottom: -15px;
-    left: -2px;
   }
 
   .Segment:hover > .label {

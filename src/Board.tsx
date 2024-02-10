@@ -54,26 +54,14 @@ export const Segment: React.FC<SegmentProps> = React.memo(({ id, horizontal, lab
   for (let i = 0; i < 5; i++) {
     pins.push(<div className='pin' key={i} />)
   }
-  if (parseInt(id)< 10 ){ //this is probably dumb as hell, but I couldn't get it to not add a space after label-pos${labelPos}
-    return (
-
-      <div className={`Segment ${horizontal ? 'horizontal' : 'vertical'} label-pos-${labelPos}-one-digit  ${selected === id ? 'selected' : ''} ${highlight ? 'highlight' : ''}`}
-        data-id={id} onClick={onSegmentClick} onMouseEnter={onSegmentHover} onMouseLeave={onSegmentHover}>
-        {label && <div className='label'>{label}</div>}
-        {pins}
-      </div>
-    )
-
-  } else {
   return (
-
     <div className={`Segment ${horizontal ? 'horizontal' : 'vertical'} label-pos-${labelPos}  ${selected === id ? 'selected' : ''} ${highlight ? 'highlight' : ''}`}
       data-id={id} onClick={onSegmentClick} onMouseEnter={onSegmentHover} onMouseLeave={onSegmentHover}>
       {label && <div className='label'>{label}</div>}
       {pins}
     </div>
   )
-}})
+})
 
 export const MainBlock: React.FC<{ first: number, last: number, labelPos: string, highlighted: Array<number> }> = ({ first, last, labelPos, highlighted }) => {
   if (first > last) {
