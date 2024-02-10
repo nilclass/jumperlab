@@ -1,0 +1,21 @@
+.HistoryTable {
+  border-collapse: collapse;
+
+  td, th {
+    border: solid 1px black;
+  }
+
+  > tbody {
+    > tr.version {
+      &.current {
+        font-weight: bold;
+      }
+
+      > td.id {
+        max-width: 200;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+}

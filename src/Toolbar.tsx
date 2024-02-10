@@ -7,11 +7,14 @@ import { InteractionContext } from './interaction'
 import { RadioGroup } from './components/RadioGroup'
 import { imagePath } from './utils'
 import { ChipStatusDialog } from './ChipStatus'
+import { HistoryDialog } from './history'
+import { JumperlessStateContext } from './JumperlessState'
 
 const buildInfo = process.env.REACT_APP_BUILD_INFO
 
 export const Toolbar: React.FC = () => {
   const { mode, handleSetMode } = useContext(InteractionContext)!
+  const { history, undo, redo } = useContext(JumperlessStateContext)
   const openDialog = useOpenDialog()
 
   return (
@@ -19,6 +22,11 @@ export const Toolbar: React.FC = () => {
       <div className='logo'>
         <img src={imagePath('logo.svg')} alt='Jumperlab logo' />
         <h1>Jumperlab</h1>
+      </div>
+      <div>
+        <button disabled={!history.canUndo} onClick={undo}>Undo</button>
+        <button disabled={!history.canRedo} onClick={redo}>Redo</button>
+        <button onClick={(e) => openDialog(<HistoryDialog />, e)}>History</button>
       </div>
       <div>
         <RadioGroup options={[

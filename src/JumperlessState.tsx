@@ -4,6 +4,7 @@ import { JumperlessNode, Netlist, NetlistEntry, SupplySwitchPos } from './jlctla
 import { netlistAddBridge, netlistDisconnectNode } from './netlist'
 import { isEqual } from 'lodash'
 import { errorToString } from './utils'
+import { makeNetlistHistory, historyAddVersion, NetlistHistory, netlistUndo, netlistRedo } from './history'
 
 type JumperlessStateContextType = {
   supplySwitchPos: SupplySwitchPos
@@ -20,6 +21,10 @@ type JumperlessStateContextType = {
   disconnectNode: (node: JumperlessNode) => void
   busy: boolean
   syncError: string | null
+  history: NetlistHistory
+
+  undo: () => void
+  redo: () => void
 }
 
 type UpdateFn = (net: NetlistEntry) => NetlistEntry
@@ -39,6 +44,9 @@ const emptyState: JumperlessStateContextType = {
   disconnectNode() {},
   busy: false,
   syncError: null,
+  history: null as any as NetlistHistory,
+  undo() {},
+  redo() {},
 }
 
 export const JumperlessStateContext = createContext<JumperlessStateContextType>(emptyState)
@@ -129,6 +137,14 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
   const [syncOnce, setSyncOnce] = useState(false)
   const [syncAuto, setSyncAuto] = useState(false)
   const [syncError, setSyncError] = useState<string | null>(null)
+  const [history, setHistory] = useState<NetlistHistory>(() => makeNetlistHistory(netlist))
+
+  useEffect(() => {
+    const newHistory = historyAddVersion(history, netlist)
+    if (newHistory) {
+      setHistory(newHistory)
+    }
+  }, [netlist])
 
   async function syncToDevice(auto?: boolean) {
     if (conn.jlctl === null) {
@@ -211,6 +227,18 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
     setNetlist(netlist => netlistDisconnectNode(netlist, node))
   }, [setNetlist])
 
+  function handleUndo() {
+    const [newHistory, newNetlist] = netlistUndo(history)
+    setHistory(newHistory)
+    setNetlist(newNetlist)
+  }
+
+  function handleRedo() {
+    const [newHistory, newNetlist] = netlistRedo(history)
+    setHistory(newHistory)
+    setNetlist(newNetlist)
+  }
+
   return (
     <JumperlessStateContext.Provider value={{
       supplySwitchPos,
@@ -227,6 +255,9 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
       disconnectNode,
       busy,
       syncError,
+      history,
+      undo: handleUndo,
+      redo: handleRedo,
     }}>
       {children}
     </JumperlessStateContext.Provider>
