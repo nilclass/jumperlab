@@ -101,12 +101,12 @@ export function randomColor() {
 
   max = Math.max(r, g, b)
 
-  console.log(max)
-  console.log("unmodified: ")
-  console.log(r, g, b)
+  // console.log(max)
+  // console.log("unmodified: ")
+  // console.log(r, g, b)
 
   if (max <= 0xBB) { //if it's a dark color, make it brighter
-    console.log("dark")
+    // console.log("dark")
 
     if (r > (max - 0x55)) { //this value kinda determines the likelihoood of getting secondary colors, so it's tuned to be roughly 50/50 primary and secondaries (rgb are primaries in this case)
       r *= 3
