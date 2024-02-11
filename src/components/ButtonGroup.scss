@@ -1,0 +1,27 @@
+
+.ButtonGroup {
+  display: flex;
+  justify-content: center;
+  gap: 2px;
+}
+
+.ButtonGroup > button {
+  display: block;
+  border: solid 1px #ddd;
+  background: #ddd;
+  color: #333;
+  font-size: 14px;
+  padding: 6px;
+
+  &:disabled {
+    color: #888;
+  }
+
+  &:first-child {
+    border-radius: 4px 0 0 4px;
+  }
+
+  &:last-child {
+    border-radius: 0 4px 4px 0;
+  }
+}

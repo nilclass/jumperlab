@@ -9,6 +9,7 @@ import { imagePath } from './utils'
 import { ChipStatusDialog } from './ChipStatus'
 import { HistoryDialog } from './history'
 import { JumperlessStateContext } from './JumperlessState'
+import { ButtonGroup } from './components/ButtonGroup'
 
 const buildInfo = process.env.REACT_APP_BUILD_INFO
 
@@ -24,9 +25,11 @@ export const Toolbar: React.FC = () => {
         <h1>Jumperlab</h1>
       </div>
       <div>
-        <button disabled={!history.canUndo} onClick={undo}>Undo</button>
-        <button disabled={!history.canRedo} onClick={redo}>Redo</button>
-        <button onClick={(e) => openDialog(<HistoryDialog />, e)}>History</button>
+        <ButtonGroup>
+          <button disabled={!history.canUndo} onClick={undo}>Undo [u]</button>
+          <button disabled={!history.canRedo} onClick={redo}>Redo</button>
+          <button onClick={(e) => openDialog(<HistoryDialog />, e)}>History</button>
+        </ButtonGroup>
       </div>
       <div>
         <RadioGroup options={[

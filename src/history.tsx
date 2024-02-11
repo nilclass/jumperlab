@@ -14,12 +14,17 @@ export type NetlistVersion = {
 }
 
 export type NetlistHistory = {
+  // List of versions. Newest version is first, oldest last.
   versions: Array<NetlistVersion>
+  // Index within `versions` of the current version. Normally 0, unless "undo" was used.
   pointer: number
+  // Is it possible to "undo"? (`versions[pointer]` does not point to the oldest version)
   canUndo: boolean
+  // Is it possible to "redo"? (`versions[pointer]` does not point to the newest version)
   canRedo: boolean
 }
 
+// Create empty NetlistHistory, starting with the given netlist.
 export function makeNetlistHistory(initialNetlist: Netlist): NetlistHistory {
   return {
     versions: [makeVersion(initialNetlist, null)],
