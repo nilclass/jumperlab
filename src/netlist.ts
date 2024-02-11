@@ -1,5 +1,5 @@
 import { uniq } from 'lodash'
-import { Netlist, NetlistEntry, Bridge, JumperlessNode } from './jlctlapi'
+import { Netlist, NetlistEntry, Bridge, JumperlessNode, isNodeSpecial } from './jlctlapi'
 
 type Result<T, E = string> = { value: T, error: never } | { value: never, error: E }
 
@@ -156,10 +156,9 @@ export function randomColor() {
   return color
 }
 
-export function netlistDisconnectNode(netlist: Netlist, node: JumperlessNode): Netlist {
-  if (typeof node === 'string') {
-    // TODO: notify that special nodes cannot be removed!
-    return netlist
+export function netlistDisconnectNode(netlist: Netlist, node: JumperlessNode): Result<Netlist> {
+  if (isNodeSpecial(node)) {
+    return Err('Cannot remove special nodes')
   }
   const newList: Netlist = []
   netlist.forEach(net => {
@@ -172,5 +171,5 @@ export function netlistDisconnectNode(netlist: Netlist, node: JumperlessNode): N
       newList.push(net)
     }
   })
-  return newList
+  return Ok(newList)
 }

@@ -7,7 +7,7 @@ export type BreadboardNode = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
   41 | 42 | 43 | 44 | 45 | 46 | 47 | 48 | 49 | 50 |
   51 | 52 | 53 | 54 | 55 | 56 | 57 | 58 | 59 | 60
 
-const specialNodes = {
+const namedNodes = {
   GND: true,
   SUPPLY_3V3: true,
   SUPPLY_5V: true,
@@ -50,8 +50,8 @@ const specialNodes = {
   NANO_A7: true,
 }
 
-export type SpecialNode = keyof typeof specialNodes
-export type JumperlessNode = BreadboardNode | SpecialNode
+export type NamedNode = keyof typeof namedNodes
+export type JumperlessNode = BreadboardNode | NamedNode
 
 export type Bridge = [JumperlessNode, JumperlessNode]
 export type NetlistEntry = {
@@ -84,11 +84,11 @@ export function breadboardNode (n: number): BreadboardNode {
   return n as BreadboardNode
 }
 
-export function specialNode (name: string): SpecialNode {
-  if (!(name in specialNodes)) {
-    throw new Error(`Invalid special node: ${JSON.stringify(name)}`)
+export function namedNode (name: string): NamedNode {
+  if (!(name in namedNodes)) {
+    throw new Error(`Invalid named node: ${JSON.stringify(name)}`)
   }
-  return name as SpecialNode
+  return name as NamedNode
 }
 
 export function makeBridge(a: string, b: string): Bridge {
@@ -99,8 +99,21 @@ export function validateNode(id: string): JumperlessNode {
   if (id.match(/^\d+$/)) {
     return breadboardNode(parseInt(id, 10))
   } else {
-    return specialNode(id)
+    return namedNode(id)
   }
+}
+
+export function isNodeSpecial(node: JumperlessNode) {
+  const specialNames: Array<JumperlessNode> = [
+    'GND',
+    'SUPPLY_3V3',
+    'SUPPLY_5V',
+    'DAC0',
+    'DAC1',
+    'ISENSE_PLUS',
+    'ISENSE_MINUS',
+  ]
+  return specialNames.includes(node)
 }
 
 function handle502(response: Response) {

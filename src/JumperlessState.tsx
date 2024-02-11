@@ -224,7 +224,15 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
   }, [setNetlist])
 
   const disconnectNode = useCallback((node: JumperlessNode) => {
-    setNetlist(netlist => netlistDisconnectNode(netlist, node))
+    setNetlist(netlist => {
+      const result = netlistDisconnectNode(netlist, node)
+      if (result.value) {
+        return result.value
+      } else {
+        alert(result.error)
+        return netlist
+      }
+    })
   }, [setNetlist])
 
   function handleUndo() {

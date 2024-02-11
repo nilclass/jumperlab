@@ -1,6 +1,6 @@
 import React, { useContext, useMemo, useRef, useState, useCallback } from "react"
 import { JumperlessStateContext } from './JumperlessState'
-import { breadboardNode, JumperlessNode, validateNode, NetlistEntry, SupplySwitchPos, SpecialNode } from "./jlctlapi"
+import { breadboardNode, JumperlessNode, validateNode, NetlistEntry, SupplySwitchPos, NamedNode } from "./jlctlapi"
 import {
   useFloating,
   autoUpdate,
@@ -344,7 +344,7 @@ const NANO_NODES: { [key: string]: { width: number, height: number, x: number, y
   },
 }
 
-function nanoPos (node: SpecialNode): [number, number] {
+function nanoPos (node: NamedNode): [number, number] {
   for (const nanoNode of Object.values(NANO_NODES)) {
     if (nanoNode.node === node) {
       const center = nanoNode.center || [0, 0]

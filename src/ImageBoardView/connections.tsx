@@ -1,4 +1,4 @@
-import { BreadboardNode, JumperlessNode, Netlist, SpecialNode } from '../jlctlapi'
+import { BreadboardNode, JumperlessNode, Netlist, NamedNode } from '../jlctlapi'
 
 type Connection<N extends JumperlessNode> = {
   a: ConnectionSpot<N>
@@ -138,17 +138,17 @@ const nanoPos: { [key: string]: ['top' | 'bottom', number] } = {
   NANO_A7: ['bottom', 11],
 }
 
-const nanoPosTop: { [key: string]: SpecialNode } = {}
-const nanoPosBottom: { [key: string]: SpecialNode } = {}
+const nanoPosTop: { [key: string]: NamedNode } = {}
+const nanoPosBottom: { [key: string]: NamedNode } = {}
 for (const [key, [tb, n]] of Object.entries(nanoPos)) {
   if (tb === 'top') {
-    nanoPosTop[n] = key as SpecialNode
+    nanoPosTop[n] = key as NamedNode
   } else {
-    nanoPosBottom[n] = key as SpecialNode
+    nanoPosBottom[n] = key as NamedNode
   }
 }
 
-function nanoPosToNode(topBottom: 'top' | 'bottom', r: number): SpecialNode {
+function nanoPosToNode(topBottom: 'top' | 'bottom', r: number): NamedNode {
   const node = (topBottom === 'top' ? nanoPosTop : nanoPosBottom)[r]
   if (!node) {
     throw new Error(`BUG: failed to look up nano node for ${topBottom} ${r}`)
