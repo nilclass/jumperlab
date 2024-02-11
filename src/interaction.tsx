@@ -31,7 +31,7 @@ type InteractionContextType = {
 export const InteractionContext = React.createContext<InteractionContextType | null>(null)
 
 type Keymap = {
-  [key: string]: () => string | null
+  [key: string]: () => any
 }
 
 export const InteractionController: React.FC<InteractionControllerProps> = ({ children }) => {
@@ -39,7 +39,7 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
   const [highlightedNode, setHighlightedNode] = useState<JumperlessNode | null>(null)
   const [highlightedNet, setHighlightedNet] = useState<number | null>(null)
   const [mode, setMode] = useState<Mode>('select')
-  const { netlist, addBridge, disconnectNode } = useContext(JumperlessStateContext)
+  const { netlist, addBridge, disconnectNode, history, undo } = useContext(JumperlessStateContext)
   const [cursorHint, setCursorHint] = useState(computeHint(mode, selectedNode))
   const selectedNet = useMemo(() => selectedNode ? netlistNetForNode(netlist, selectedNode) : null, [netlist, selectedNode])
 
@@ -56,9 +56,10 @@ export const InteractionController: React.FC<InteractionControllerProps> = ({ ch
         disconnectNode(selectedNode)
         setSelectedNode(null)
         return '...'
-      } : () => keySetMode('disconnect')
+      } : () => keySetMode('disconnect'),
+      u: () => history.canUndo && undo(),
     }
-  }, [selectedNode, disconnectNode])
+  }, [selectedNode, disconnectNode, undo])
 
   function handleNodeClick(node: JumperlessNode | null) {
     switch (mode) {
