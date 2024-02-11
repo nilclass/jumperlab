@@ -22,6 +22,7 @@ type JumperlessStateContextType = {
   busy: boolean
   syncError: string | null
   history: NetlistHistory
+  replaceNetlist: (netlist: Netlist) => void
 
   undo: () => void
   redo: () => void
@@ -47,6 +48,7 @@ const emptyState: JumperlessStateContextType = {
   history: null as any as NetlistHistory,
   undo() {},
   redo() {},
+  replaceNetlist() {},
 }
 
 export const JumperlessStateContext = createContext<JumperlessStateContextType>(emptyState)
@@ -247,6 +249,10 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
     setNetlist(newNetlist)
   }
 
+  function replaceNetlist(netlist: Netlist) {
+    setNetlist(netlist)
+  }
+
   return (
     <JumperlessStateContext.Provider value={{
       supplySwitchPos,
@@ -264,6 +270,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
       busy,
       syncError,
       history,
+      replaceNetlist,
       undo: handleUndo,
       redo: handleRedo,
     }}>
