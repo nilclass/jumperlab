@@ -34,22 +34,22 @@ const ChipStatusTable: React.FC<ChipStatusProps> = ({ chips }) => {
 export const ChipStatusDialog: React.FC = () => {
   const [chips, setChips] = useState<Array<ChipStatus> | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const { jlctl } = useContext(ConnectionContext)!
+  const { reachable, jlctl } = useContext(ConnectionContext)!
 
   useEffect(() => {
-    if (!jlctl) {
+    if (!reachable) {
       setError("Not connected")
       return
     }
 
-    jlctl.getChipStatus().then(setChips).catch(setError)
+    jlctl!.getChipStatus().then(setChips).catch(setError)
   }, [])
 
   return (
     <ModalDialog>
       <h3>Chip Status</h3>
 
-      {error ? <div style={{ color: 'red' }}>{error}</div> : chips ? <ChipStatusTable chips={chips} /> : '...'}
+      {error ? <div style={{ color: 'red' }}>{error.toString()}</div> : chips ? <ChipStatusTable chips={chips} /> : '...'}
     </ModalDialog>
   )
 }
