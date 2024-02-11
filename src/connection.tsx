@@ -18,8 +18,8 @@ export type ConnectionContextType = {
   bridges: Array<Bridge>
   supplySwitchPos: SupplySwitchPos
 
-  // updates the context, by re-loading all info from the backend
-  poll: () => Promise<void>
+  // Updates status of the backend. If `reload` is given, also polls the netlist, and other info from the board.
+  poll: (reload?: boolean) => Promise<void>
 }
 
 export const ConnectionContext = React.createContext<ConnectionContextType | null>(null)
@@ -49,11 +49,11 @@ export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.Reac
       bridges: [],
       supplySwitchPos: '3.3V',
 
-      async poll() {
+      async poll(reload: boolean = false) {
         let status: Status
         try {
           status = await ctx.jlctl!.getStatus()
-          if (status.connected) {
+          if (status.connected && reload) {
             ctx.netlist = await ctx.jlctl!.getNetlist()
             ctx.supplySwitchPos = await ctx.jlctl!.getSupplySwitchPos()
           }
@@ -72,7 +72,7 @@ export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.Reac
 
     contextRef.current = ctx
 
-    ctx.poll().then(() => setInitialized(true))
+    ctx.poll(true).then(() => setInitialized(true))
   }, [baseUrl])
 
   if (initialized) {

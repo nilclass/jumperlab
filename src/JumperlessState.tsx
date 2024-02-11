@@ -171,7 +171,7 @@ export const JumperlessState: React.FC<{ children: React.ReactNode }> = ({ child
     }
     setBusy(true)
     try {
-      await conn.poll()
+      await conn.poll(true)
       setSyncOnce(true)
     } catch (e) {
       setSyncError(errorToString(e))
