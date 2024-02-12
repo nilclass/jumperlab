@@ -10,8 +10,11 @@
   border: solid 1px #ddd;
   background: #ddd;
   color: #333;
-  font-size: 14px;
-  padding: 6px;
+  font-size: 1vw;
+  text-align: center;
+  
+  padding: 5px;
+  
 }
 
 .RadioGroup > .option:first-child {
@@ -23,7 +26,8 @@
 }
 
 .RadioGroup > .option[data-checked="true"] {
-  border-color: #f74599;
+  border-color: #ffffff;
+  background-color: #f74599;
 }
 
 .RadioGroup > .option > input {
