@@ -1822,7 +1822,7 @@ dependencies = [
 [[package]]
 name = "jlctl"
 version = "0.1.0-rc1"
-source = "git+https://github.com/nilclass/jlctl#3617ee24833946af60fcff4734c9054b101c888d"
+source = "git+https://github.com/nilclass/jlctl#915f7c0cd535e0bda5601750903913630b543102"
 dependencies = [
  "actix-cors",
  "actix-web",
@@ -1833,6 +1833,7 @@ dependencies = [
  "log",
  "mime_guess",
  "nom",
+ "rusb",
  "serde",
  "serde_json",
  "serialport",
@@ -1962,6 +1963,18 @@ checksum = "3c8469b4a23b962c1396b9b451dda50ef5b283e8dd309d69033475fa9b334324"
 dependencies = [
  "libc",
  "pkg-config",
+]
+
+[[package]]
+name = "libusb1-sys"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f9d0e2afce4245f2c9a418511e5af8718bcaf2fa408aefb259504d1a9cb25f27"
+dependencies = [
+ "cc",
+ "libc",
+ "pkg-config",
+ "vcpkg",
 ]
 
 [[package]]
@@ -2800,6 +2813,16 @@ name = "regex-syntax"
 version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
+
+[[package]]
+name = "rusb"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "45fff149b6033f25e825cbb7b2c625a11ee8e6dac09264d49beb125e39aa97bf"
+dependencies = [
+ "libc",
+ "libusb1-sys",
+]
 
 [[package]]
 name = "rustc-demangle"
