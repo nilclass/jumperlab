@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "npm build",
+    "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm start",
     "devPath": "http://localhost:3000",
     "distDir": "../build"
@@ -29,7 +29,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "io.github.nilclass.jumperlab",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -56,10 +56,10 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 1200,
         "resizable": true,
         "title": "jumperlab",
-        "width": 800
+        "width": 1600
       }
     ]
   }

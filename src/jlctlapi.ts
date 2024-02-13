@@ -1,4 +1,4 @@
-
+import { invoke } from '@tauri-apps/api/tauri'
 
 export type BreadboardNode = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
   11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 |
@@ -116,104 +116,35 @@ export function isNodeSpecial(node: JumperlessNode) {
   return specialNames.includes(node)
 }
 
-function handle502(response: Response) {
-  if (response.status === 502) {
-    throw new NotConnected()
-  }
-}
-
 export class NotConnected extends Error {}
 
 export class JlCtl {
-  baseUrl: string
-
-  constructor(baseUrl: string) {
-    this.baseUrl = baseUrl
-    if (this.baseUrl.slice(-1) !== '/') {
-      this.baseUrl += '/'
-    }
-  }
-
   async getStatus(): Promise<Status> {
-    const response = await fetch(this.buildUrl('status'))
-    return await response.json() as Status
+    return await invoke('jlctl_status') as Status
   }
 
   async getNetlist(): Promise<Array<NetlistEntry>> {
-    const response = await fetch(this.buildUrl('nets'))
-    handle502(response)
-    return await response.json() as Array<NetlistEntry>
+    return await invoke('jlctl_netlist') as Array<NetlistEntry>
   }
 
   async putNetlist(netlist: Array<NetlistEntry>): Promise<void> {
-    await fetch(this.buildUrl('nets'), {
-      method: 'PUT',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify(netlist),
-    })
+    await invoke('jlctl_set_netlist', { netlist })
   }
 
   async getSupplySwitchPos(): Promise<SupplySwitchPos> {
-    const response = await fetch(this.buildUrl('supply_switch_pos'))
-    handle502(response)
-    return await response.json() as SupplySwitchPos
+    return await invoke('jlctl_supply_switch_pos') as SupplySwitchPos
   }
 
   async setSupplySwitchPos(pos: SupplySwitchPos): Promise<void> {
-    const response = await fetch(this.buildUrl(`supply_switch_pos/${pos}`), { method: 'PUT' })
-    handle502(response)
+    await invoke('jlctl_set_supply_switch_pos', { pos })
   }
 
   async getChipStatus(): Promise<Array<ChipStatus>> {
-    const response = await fetch(this.buildUrl('chip_status'))
-    handle502(response)
-    const result = await response.json();
-    console.log('chip status', result)
+    const result: Array<any> = await invoke('jlctl_chip_status')
     return result.map(({ char, x_status, y_status }: { char: ChipStatus['char'], x_status: ChipStatus['xStatus'], y_status: ChipStatus['yStatus'] }) => ({
       char,
       xStatus: x_status,
       yStatus: y_status,
     }))
   }
-
-  buildUrl(path: string): string {
-    return `${this.baseUrl}${path}`
-  }
-
-  // async getBridges(): Promise<Array<Bridge>> {
-  //   const response = await fetch(`${this.baseUrl}/bridges`)
-  //   handle502(response)
-  //   return await response.json() as Array<Bridge>
-  // }
-
-  // async addBridges(bridges: Array<Bridge>): Promise<Array<Bridge>> {
-  //   const response = await fetch(`${this.baseUrl}/bridges`, {
-  //     method: 'PUT',
-  //     headers: {
-  //       'content-type': 'application/json',
-  //     },
-  //     body: JSON.stringify(bridges),
-  //   })
-  //   handle502(response)
-  //   return await response.json() as Array<Bridge>
-  // }
-
-  // async removeBridges(bridges: Array<Bridge>): Promise<Array<Bridge>> {
-  //   const response = await fetch(`${this.baseUrl}/bridges`, {
-  //     method: 'PUT',
-  //     headers: {
-  //       'content-type': 'application/json',
-  //     },
-  //     body: JSON.stringify(bridges),
-  //   })
-  //   handle502(response)
-  //   return await response.json() as Array<Bridge>
-  // }
-
-  // async clearBridges(): Promise<void> {
-  //   const response = await fetch(`${this.baseUrl}/bridges/clear`, { method: 'POST' })
-  //   handle502(response)
-  // }
 }

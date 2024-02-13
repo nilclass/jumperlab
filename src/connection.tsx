@@ -21,13 +21,13 @@ export type ConnectionContextType = {
 
 export const ConnectionContext = React.createContext<ConnectionContextType | null>(null)
 
-export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.ReactNode }> = ({ baseUrl, children }) => {
+export const ConnectionWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const contextRef = useRef<ConnectionContextType | null>(null)
   const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
     const ctx: ConnectionContextType = {
-      jlctl: new JlCtl(baseUrl),
+      jlctl: new JlCtl(),
       reachable: false,
       ready: false,
       netlist: null,
@@ -58,7 +58,7 @@ export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.Reac
     contextRef.current = ctx
 
     ctx.poll(true).then(() => setInitialized(true))
-  }, [baseUrl])
+  }, [])
 
   if (initialized) {
     return <ConnectionContext.Provider value={contextRef.current}>{children}</ConnectionContext.Provider>
