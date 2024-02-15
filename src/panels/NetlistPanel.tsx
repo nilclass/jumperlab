@@ -77,7 +77,7 @@ function isSpecial(net: NetlistEntry) {
 }
 
 function fixColor(color: string): string {
-  const match = color.match(/^rgba\(([\d\.]+),\s*([\d\.]+),\s*([\d\.]+),\s*([\d\.]+)\)$/)
+  const match = color.match(/^rgba\(([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)\)$/)
   if (match) {
     const r = Math.round(parseFloat(match[1]))
     const g = Math.round(parseFloat(match[2]))
