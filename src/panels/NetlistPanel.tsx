@@ -26,7 +26,7 @@ export const NetlistPanel: React.FC = () => {
   }
 
   const handleColorChange = (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const color = e.currentTarget.value
+    const color = fixColor(e.currentTarget.value)
     updateNet(index, net => ({ ...net, color }))
   }
 
@@ -75,3 +75,15 @@ export const NetlistPanel: React.FC = () => {
 function isSpecial(net: NetlistEntry) {
   return net.index <= 7
 }
+
+function fixColor(color: string): string {
+  const match = color.match(/^rgba\(([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)\)$/)
+  if (match) {
+    const r = Math.round(parseFloat(match[1]))
+    const g = Math.round(parseFloat(match[2]))
+    const b = Math.round(parseFloat(match[3]))
+    return '#' + r.toString(16).padStart(2, '0') + g.toString(16).padStart(2, '0') + b.toString(16).padStart(2, '0')
+  }
+  return color
+}
+

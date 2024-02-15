@@ -15,6 +15,7 @@
     > .Sidebar {
       flex-grow: 0;
       overflow: auto;
+      max-height: calc(100vh - 62px);
     }
 
     > .BoardView {

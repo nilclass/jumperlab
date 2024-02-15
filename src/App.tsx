@@ -9,17 +9,13 @@ import { SettingsWrapper } from './Settings';
 import { Sidebar } from './Sidebar';
 import { Toolbar } from './Toolbar';
 
-const defaultJlctlUrl = 'http://localhost:8080'
-
 function App() {
-  const jlctlUrl = new URLSearchParams(document.location.search).get('jlctl') || defaultJlctlUrl
-
   return (
     // Provides UI settings
     <SettingsWrapper>
 
       {/* Provides connection to the jlctl server */}
-      <ConnectionWrapper baseUrl={jlctlUrl}>
+      <ConnectionWrapper>
 
         {/* Manages the board state (in-memory state and synchronization) */}
         <JumperlessState>
