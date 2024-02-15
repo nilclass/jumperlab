@@ -1,5 +1,4 @@
-import React, { useRef } from 'react'
-import { CSSTransition } from 'react-transition-group'
+import React from 'react'
 import { JumperlessNode } from './jlctlapi'
 import { Mode } from './interaction'
 import './NodeDetails.css'
@@ -11,7 +10,6 @@ type NodeDetailsProps = {
 }
 
 export const NodeDetails: React.FC<NodeDetailsProps> = ({ node, mode, onSetMode }) => {
-  const nodeRef = useRef<HTMLDivElement | null>(null)
   return (
     <div className={`NodeDetails ${node === null ? 'hidden' : ''}`}>
       {node && (

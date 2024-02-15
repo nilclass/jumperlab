@@ -1,6 +1,6 @@
 
 export function imagePath(filename: string): string {
-  return `${process.env.PUBLIC_URL}/images/${filename}`
+  return `/images/${filename}`
 }
 
 export function errorToString(e: unknown): string {

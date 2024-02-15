@@ -13,7 +13,7 @@ import { ButtonGroup } from './components/ButtonGroup'
 import { Netlist } from './jlctlapi'
 import stableStringify from 'json-stable-stringify'
 
-const buildInfo = process.env.REACT_APP_BUILD_INFO
+const buildInfo = 'unknown' // process.env.REACT_APP_BUILD_INFO
 
 export const Toolbar: React.FC = () => {
   const { mode, handleSetMode } = useContext(InteractionContext)!

@@ -1,8 +1,5 @@
-import React, { useState, useEffect, useRef, useContext } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { JlCtl, Bridge, Netlist, NotConnected, SupplySwitchPos, Status } from './jlctlapi'
-import './connection.css'
-import { StatusIcon } from './components/StatusIcon'
-import { imagePath } from './utils'
 
 export type ConnectionContextType = {
   // interface to the jlctl server
@@ -23,18 +20,6 @@ export type ConnectionContextType = {
 }
 
 export const ConnectionContext = React.createContext<ConnectionContextType | null>(null)
-
-export const ConnectionWidget: React.FC<{ pollIntervalMs: number }> = ({ pollIntervalMs }) => {
-  const { reachable, ready } = useContext(ConnectionContext)!
-
-  return (
-    <div className='ConnectionWidget'>
-      <strong>Connection status:</strong>
-      <StatusIcon ok={reachable} src={imagePath('http-icon.svg')} title='jlctl server reachable' />
-      <StatusIcon ok={ready} src={imagePath('board-icon.svg')} title='connected to board' />
-    </div>
-  )
-}
 
 export const ConnectionWrapper: React.FC<{ baseUrl: string, children: React.ReactNode }> = ({ baseUrl, children }) => {
   const contextRef = useRef<ConnectionContextType | null>(null)

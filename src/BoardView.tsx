@@ -235,7 +235,7 @@ function nodeToSegment(node: JumperlessNode | null): string | null {
   return node.toString()
 }
 
-const BlankLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> = ({ onSizeChange }) => {
+const BlankLayer: React.FC<{ onSizeChange: (size: [number, number]) => void }> = ({ }) => {
   return null
 }
 /* 
@@ -266,7 +266,7 @@ const CameraLayer: React.FC<{ onSizeChange: (size: [number, number]) => void, de
         video.srcObject = stream
         onSizeChange([settings.width!, settings.height!])
       },
-      (e) => console.log('no cam')
+      () => console.log('no cam')
     )
   }, [deviceId, onSizeChange])
   
